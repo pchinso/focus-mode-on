@@ -1,143 +1,138 @@
-# Cuestionario de inicio de desarrollo —}
+# Development Kickoff Questionnaire
 
-> **Para qué sirve**: capturar, en un solo sitio, todo lo necesario para
-> arrancar la definición de una app nueva. Rellena lo que sepas (deja en blanco
-> o marca «por decidir» lo que no); este documento es el **punto de entrada**:
-> alimenta el Paso 0 de `agents.md` y, a partir de él, se redacta el `spec.md`.
+> **Purpose**: Capture everything needed, in one place, to kick off the definition of a new app. Fill in what you know (leave blank or mark as "TBD" what you don't); this document is the **entry point**: it feeds Step 0 of `agents.md` and from it the `spec.md` is drafted.
 >
-> No hace falta responderlo perfecto ni completo: cuanto más detalles, menos
-> preguntas harán falta después. Marca con `[x]` las casillas que apliquen.
+> It doesn't need to be perfect or complete: the more detail you provide, the fewer follow-up questions will be needed. Mark with `[x]` the checkboxes that apply.
 
-Fecha: {{YYYY-MM-DD}} · Autor: {{nombre}} · Versión del brief: {{v1}}
-
----
-
-## 1. Identidad del proyecto
-
-- **Nombre (provisional)**: {{Focus Mode On}}
-- **Frase de una línea** (qué es, para quién): {{getion de tareas personal y mejora de productividad}}
-- **Promotor / responsable**: {{pchinso}}
-- **Equipo previsto** (iniciales/roles): {{solo usuario pchinso}}
-
-## 2. Problema y objetivo (visión)
-
-- **¿Qué problema resuelve?** {{gestion de tareas como areas de actividad con Iniciativas y proyectos internos }}
-- **¿Qué decisiones permite tomar al usuario?** {{Actualizar el trabajo completado y visualizar el pendiente}}
-- **¿Qué se hace hoy sin esta app y por qué no basta?** {{se intento con obsidian pero falta una capa de automatizacion en el proceso de marcar a partir de texto de entrada natural la creacion de nuevas tareas y la complitud de la hechas]}}
-- **¿Cómo se medirá que ha tenido éxito?** {{mejorar en el dia con el seguientos de actividades de trabajo y personal}}
-
-## 3. Usuarios y contexto de uso
-
-- **¿Quién la usa?** (perfil, nivel técnico): {{yo desarrollador}}
-- **¿Cuántos usuarios y a la vez?** {{`1}}
-- **¿Dónde la usan?**
-  - [ ] Escritorio Windows offline
-  - [X] Navegador web
-  - [ ] Línea de comandos / scripts
-  - [ ] Servidor / servicio
-  - [ ] Embebida en otra herramienta
-  - [ ] Otro: {{...}}
-- **¿Idioma(s) de la interfaz?** {{en}}
-
-## 4. Alcance
-
-- **Imprescindible en la V1** (lo que sí o sí debe estar):
-  1. {{Listado de tareas pendientes y completadas}}
-  2. {{Capa IA para la actualizacion mediante entradas de texto natural}}
-  3. Capacidad de generar  imagenes semanticamente relevantes que sirvan para una identificacion  facil diferentes lineas de proceso de actividades en refereencia a iniciativas y o proyectos.
-  4. Todos los archivos son em base archivos Markdown .md legibles y correctamente formateados fuera de la app GUI.
-  5. La GUI navegador inperpreta visualmente los archivoa para presentarlos de forma visual atractiva.
-- **Deseable más adelante** (roadmap): {{capacidad de ingesta de informacion para la creacion de contextos, busqueda online de informacion relevante}}
-- **Explícitamente FUERA de alcance**: {{sin definir}}
-
-## 5. Activos existentes a reutilizar  *(muy importante)*
-
-- **¿Hay código/prototipos/notebooks?** Rutas o repos: {{solo ejemplo de notas diarias Obsidian en "references"}}
-- **¿Ejecutables o motores legacy?** ¿En qué lenguaje? {{no}}
-- **¿Excel/documentos de planificación o de cálculo de referencia?** {{no}}
-- **¿Hay una GUI o diseño previo que sirva de base?** {{no}}
-- **¿Qué se debe ignorar/descartar de lo existente?** {{las referencia son solo por contexto no por diseño}}
-
-## 6. Arquitectura y plataforma  *(preferencias y restricciones)*
-
-> La decisión final se toma con `spec_architecture.md`; aquí solo lo que ya
-> sepas o exijas.
-
-- **Sistema operativo objetivo**: {{multiplataforma}}
-- **Lenguaje/stack preferido o impuesto** (si lo hay): {{Python/web}
-- **¿Restricciones de TI?** (sin servidor, sin internet, antivirus, permisos): {{framework ligero y rapido, que permita hospedaje gratuito y gestion sencilla de actualizaciones via github}}
-- **Intuición de patrón** (sin compromiso):
-  - [ ] App de escritorio monolítica
-  - [ ] GUI + motores de cálculo CLI (contrato JSON)
-  - [ ] Cliente + servicio/API
-  - [X] Aplicación web
-  - [ ] Librería / CLI sin GUI
-  - [ ] No lo sé — que se proponga
-
-## 7. Datos: entradas y salidas
-
-- **Entradas** (qué datos consume, formatos: JSON/CSV/Excel/BD, volumen): {{.md}}
-- **Salidas** (qué produce: tablas, gráficas, informes, ficheros): {{.md}}
-- **¿Series temporales o grandes volúmenes?** Resolución y tamaño: {{no}}
-- **¿Persistencia?** ¿Hay que guardar proyectos/escenarios/historial? {{puede ser interesante alguna db, tipipo vector db semantica}}
-- **¿Librerías de datos de referencia?** (catálogos, fabricantes, tablas): {{puede ser intersante en algun proyecto}}
-
-## 8. Cálculos / funcionalidades clave
-
-- **Cálculos o lógica de negocio principales** (lista): {{no en un principio}}
-- **¿Optimización, simulación, análisis estadístico?** {{no necesariamente}}
-- **¿Tiempos de cálculo esperados?** (segundos / minutos): {{sub segundo}}
-- **¿Algo que NO deba bloquear la interfaz?** {{ui disponible siempre rapido y fluido}}
-
-## 9. Distribución y protección
-
-- **¿Cómo se entrega?**
-  - [ ] Ejecutable autónomo (instalable/portátil)
-  - [ ] Paquete/librería
-  - [X] Acceso web/servicio
-  - [ ] Otro: {{...}}
-- **¿Se reparte a terceros fuera del equipo?** [ ] Sí [x] No
-- **Si sí, ¿se necesita protección/licencia?** (caducidad, vinculación a
-  máquina, trazabilidad): {{no}}  → activa `spec_licensing.md`.
-- En acceso a UI para ver datos mediante Password.
-- La informacion subida protegioda por encriptacion
-- **¿Soporte/contacto para usuarios?** {{no}}
-
-## 10. Identidad visual
-
-- **¿Aplica identidad Cox estándar?** [x] Sí (por defecto) [ ] Con excepciones: {{...}}
-- **¿Modo claro/oscuro?** [x] Ambos [ ] Solo claro [ ] Indiferente
-- **¿Necesidades visuales especiales?** (dashboards, mapas, 3D, impresión): {{Visualmente atractiva interpretacion de lineas de actividad}}
-
-## 11. Requisitos no funcionales
-
-- **Rendimiento / límites**: {{rapida para el usuario}}
-- **Seguridad / confidencialidad de datos**: {{encriptacion de datos y proteccion de accesos a app}}
-- **Accesibilidad / impresión / exportación**: {{generacion de reporte html con indentidad visual}}
-- **Mantenimiento**: ¿quién lo mantendrá y por cuánto tiempo? {{pchiso siempre}}
-
-## 12. Planificación
-
-- **Fecha objetivo de primera versión usable**: {{lo antes posible}}
-- **Hitos o fechas clave**: {{no hay}}
-- **Esfuerzo estimado / disponible**: {{claude Max}}
-- **Dependencias externas** (datos, personas, aprobaciones): {{no}}
-
-## 13. Riesgos, dudas y decisiones abiertas
-
-- **Riesgos que ya ves**: {{que no se encuente una interfaz ui atractiva y que sintetiza conceptualmente bien}}
-- **Preguntas que tú mismo tienes sin resolver**: {{como sera la interfaz, lo dejo en mano de la IA}}
-- **Decisiones que quieres dejar para más adelante**: {{invitacion a externos para colaborar en un proyecto o hilo de actividades}}
+Date: 2026-07-08 · Author: pchinso · Brief version: v1
 
 ---
 
-## Notas libres
+## 1. Project Identity
 
-{{Cualquier cosa que no encaje arriba: contexto, ejemplos, capturas, enlaces…}}
+- **Name (provisional)**: Focus Mode On
+- **One-liner** (what it is, who it's for): Personal task management and productivity improvement
+- **Owner / responsible**: pchinso
+- **Expected team** (initials/roles): Solo — user pchinso only
+
+## 2. Problem and Objective (Vision)
+
+- **What problem does it solve?** Task management organized as activity areas with Initiatives and internal projects. Add geraquical threads vision fom initial node of main semantical meanin to lowest one task.
+- **What decisions does it enable the user to make?** Update completed work and visualize pending items, all within the app UI. Avoid user to manage .md docuements UI facilittes this via AI automation layer.
+- **What is done today without this app, and why is that insufficient?** Obsidian was tried, but it lacks an automation layer for processing via natural language — which is what this app aims to integrate. The goal is for natural-language text input to drive the creation of new tasks and the completion of existing ones.
+- **How will success be measured?** Improved productivity and daily focus through tracking of both work and personal activities.
+
+## 3. Users and Usage Context
+
+- **Who uses it?** (profile, technical level): Solo developer (myself)
+- **How many users, and concurrently?** 1
+- **Where is it used?**
+  - [ ] Windows desktop, offline
+  - [X] Web browser
+  - [ ] Command line / scripts
+  - [ ] Server / service
+  - [ ] Embedded in another tool
+  - [ ] Other: ...
+- **Interface language(s)?** English
+
+## 4. Scope
+
+- **Must-have in V1** (non-negotiable):
+  1. Entry dashboard showing activity threads
+  2. Two top-level activity nodes: **WORK** and **PERSONAL**
+  3. From each node, secondary threads branch off hierarchically, evolving and subdividing until completion. Completing a thread triggers automatic archiving, with the option to restore it if needed.
+  4. A list of pending and completed tasks at the end of each thread. Completed tasks appear above pending ones.
+  5. An AI layer for updates via natural-language text input (Via openai API).
+  6. Ability to generate semantically relevant images or icons for easy visual identification of different activity thread lines (by initiatives and/or projects).
+  7. All files are Markdown (`.md`), readable and correctly formatted outside the app GUI. Inside the app, they feed and render into a more visual and interactive UI.
+  8. The browser GUI interprets the files visually, presenting them in an attractive, visual format.
+  9. Keyboard only navigation inside UI.
+- **Nice-to-have later** (roadmap): Ingestion of information for context building; online search for relevant information.
+- **Explicitly OUT of scope**: Not yet defined.
+
+## 5. Existing Assets to Reuse *(very important)*
+
+- **Is there existing code / prototypes / notebooks?** Paths or repos: Only sample daily notes from Obsidian in `references/`.
+- **Executables or legacy engines?** Language? No.
+- **Excel / planning or calculation documents for reference?** No.
+- **Is there an existing GUI or design to use as a base?** No.
+- **What should be ignored / discarded from existing assets?** The references are for context only, not for design.
+
+## 6. Architecture and Platform *(preferences and constraints)*
+
+> The final decision is made in `spec_architecture.md`; only include what you already know or require here.
+
+- **Target operating system**: Cross-platform
+- **Preferred or required language/stack** (if any): Python / web
+- **IT restrictions?** (no server, no internet, antivirus, permissions): Lightweight and fast framework; must support free hosting and straightforward update management via GitHub.
+- **Architecture pattern intuition** (non-binding):
+  - [ ] Monolithic desktop app
+  - [ ] GUI + CLI calculation engines (JSON contract)
+  - [ ] Client + service/API
+  - [X] Web application
+  - [ ] Library / CLI without GUI
+  - [ ] Don't know — let it be proposed
+
+## 7. Data: Inputs and Outputs
+
+- **Inputs** (data consumed, formats: JSON/CSV/Excel/DB, volume): `.md` files
+- **Outputs** (what it produces: tables, charts, reports, files): `.md` files
+- **Time series or large volumes?** Resolution and size: No.
+- **Persistence?** Need to save projects/scenarios/history? A database could be interesting — possibly a semantic vector DB.
+- **Reference data libraries?** (catalogs, manufacturers, lookup tables): Could be interesting in some projects.
+
+## 8. Key Calculations / Functionality
+
+- **Main calculations or business logic** (list): None initially.
+- **Optimization, simulation, statistical analysis?** Not necessarily.
+- **Expected calculation times?** (seconds / minutes): Sub-second.
+- **Anything that must NOT block the interface?** UI must always be fast and fluid.
+
+## 9. Distribution and Protection
+
+- **How is it delivered?**
+  - [ ] Standalone executable (installable / portable)
+  - [ ] Package / library
+  - [X] Web access / service
+  - [ ] Other: ...
+- **Distributed to third parties outside the team?** [ ] Yes [x] No
+- **If yes, is protection/licensing needed?** (expiry, machine binding, traceability): No → activates `spec_licensing.md`.
+- UI access protected by password.
+- Uploaded data protected by encryption.
+- **Support/contact for users?** No.
+
+## 10. Visual Identity
+
+- **Apply standard Cox identity?** [x] Yes (default) [ ] With exceptions: ...
+- **Light/dark mode?** [x] Both [ ] Light only [ ] Indifferent
+- **Special visual requirements?** (dashboards, maps, 3D, print): Visually attractive representation of activity threads.
+
+## 11. Non-Functional Requirements
+
+- **Performance / limits**: Fast for the user.
+- **Security / data confidentiality**: Data encryption and access protection for the app.
+- **Accessibility / print / export**: Generation of an HTML report with visual identity.
+- **Maintenance**: Who will maintain it and for how long? pchinso, indefinitely.
+
+## 12. Planning
+
+- **Target date for first usable version**: As soon as possible.
+- **Milestones or key dates**: None.
+- **Estimated / available effort**: Claude Max for app development.
+- **External dependencies** (data, people, approvals): Open AI api key.
+
+## 13. Risks, Open Questions, and Unresolved Decisions
+
+- **Risks already identified**: Failing to find a UI that is both visually attractive and conceptually well-structured and easy interaction.
+- **Open questions you have yourself**: What the interface will look like — leaving this to the AI to propose.
+- **Decisions deferred for later**: Inviting external collaborators to contribute to a project or activity thread.
 
 ---
 
-> **Siguiente paso**: entrega este cuestionario relleno. Con él, sigue el
-> procedimiento de `agents.md` para producir el `spec.md` de la app, usando
-> `spec_vision.md`, `spec_architecture.md`, `spec_visual_id.md` y
-> (si aplica) `spec_licensing.md`.
+## Free Notes
+
+Anything that doesn't fit above: context, examples, screenshots, links…
+
+---
+
+> **Next step**: Submit this completed questionnaire. With it, follow the procedure in `agents.md` to produce the app's `spec.md`, using `spec_vision.md`, `spec_architecture.md`, `spec_visual_id.md`, and (if applicable) `spec_licensing.md`.

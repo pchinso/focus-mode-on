@@ -1,0 +1,21 @@
+// Recommended markdownlint config for Cox engineering apps.
+// Copy this file to the project ROOT as ".markdownlint.jsonc" (with the leading
+// dot) so VS Code / the markdownlint CLI pick it up.
+//
+// Keeps the structural rules that produce clean documents active (blank lines
+// around headings/lists, spaced and consistent tables, fenced code blocks with
+// a language, etc.) and only relaxes the noisy ones.
+{
+  "default": true,
+
+  // Line length: prose is wrapped for readability, but we do not enforce a hard
+  // limit (long tables and URLs would break it). Disabled.
+  "MD013": false,
+
+  // Allow duplicate headings when they live in different sections
+  // (e.g. several "### Input" headings under different engines).
+  "MD024": { "siblings_only": true },
+
+  // Allow occasional inline HTML when needed (e.g. <br> inside a table cell).
+  "MD033": false
+}

@@ -8,10 +8,15 @@ rendered client-side, so threads always have a visual identity.
 from __future__ import annotations
 
 import base64
+import logging
 import os
 from pathlib import Path
 
+logger = logging.getLogger("focus_mode_on")
+
 ICON_FILE = "icon.png"
+# gpt-image-1 only supports 1024x1024 / 1024x1536 / 1536x1024 / auto.
+ICON_SIZE = "1024x1024"
 
 
 class IconGenerator:
@@ -68,7 +73,8 @@ class IconGenerator:
             result = self._client.images.generate(
                 model=self._model,
                 prompt=prompt,
-                size="256x256",
+                size=ICON_SIZE,
+                quality="low",
                 n=1,
             )
             b64 = result.data[0].b64_json
@@ -77,5 +83,7 @@ class IconGenerator:
             folder.mkdir(parents=True, exist_ok=True)
             (folder / ICON_FILE).write_bytes(base64.b64decode(b64))
             return ICON_FILE
-        except Exception:  # noqa: BLE001 - non-blocking per spec
+        except Exception as exc:  # noqa: BLE001 - non-blocking per spec
+            # Best-effort: log so failures are diagnosable, but never raise.
+            logger.warning("Icon generation failed for %r: %s", title, exc)
             return None

@@ -18,8 +18,24 @@
   </head>
   <body>
     {% block chrome %}
+    {% set mode = request.cookies.get('focus_mode', 'work') %}
+    {% if mode not in ROOTS %}{% set mode = 'work' %}{% endif %}
     <header class="app-header">
       <a class="brand" href="/">◆ Focus Mode On</a>
+      <div class="mode-switch" role="group" aria-label="App mode">
+        {% for m in ROOTS %}
+        <form action="/mode/{{ m }}" method="post" style="display: inline">
+          <button
+            type="submit"
+            class="mode-btn {{ m }} {{ 'active' if m == mode else '' }}"
+            {{ 'aria-current=true' if m == mode else '' }}
+            title="Switch to {{ m }} mode (m)"
+          >
+            {{ m | upper }}
+          </button>
+        </form>
+        {% endfor %}
+      </div>
       <nav>
         <a href="/" data-nav>Dashboard</a>
         <a href="/archive" data-nav>Archive</a>
@@ -32,6 +48,7 @@
       </nav>
     </header>
     {% endblock %}
+    <form id="mode-toggle-form" action="/mode/{{ 'personal' if mode == 'work' else 'work' }}" method="post" hidden></form>
 
     <main>{% block content %}{% endblock %}</main>
 

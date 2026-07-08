@@ -29,21 +29,24 @@
 
 <div id="command-result"></div>
 
-{% for root in roots %}
+{% if active %}
 <section class="root-section">
-  <div class="root-title {{ root.rel_path }}">
-    <h2>{{ root.title }}</h2>
-    <span class="pill">{{ root.children | length }} thread{{ 's' if root.children | length != 1 else '' }}</span>
+  <div class="root-title {{ active.rel_path }}">
+    <h2>{{ active.title }} mode</h2>
+    <span class="pill">{{ active.children | length }} thread{{ 's' if active.children | length != 1 else '' }}</span>
   </div>
-  {% if root.children %}
+  {% if active.children %}
   <div class="cards">
-    {% for thread in root.children %}
+    {% for thread in active.children %}
     {{ ui.thread_card(thread) }}
     {% endfor %}
   </div>
   {% else %}
-  <p class="empty">No threads yet. Use the command bar to start one.</p>
+  <p class="empty">
+    No threads in {{ active.title }} yet. Use the command bar to start one, or
+    press <kbd>m</kbd> to switch mode.
+  </p>
   {% endif %}
 </section>
-{% endfor %}
+{% endif %}
 {% endblock %}

@@ -96,12 +96,16 @@ class AICommandLayer:
         except Exception:
             return None
 
-    def interpret(self, text: str, tree_paths: list[str]) -> InterpretResult:
+    def interpret(
+        self, text: str, tree_paths: list[str], default_root: str = "work"
+    ) -> InterpretResult:
         """Interpret ``text`` into intents given the available thread paths.
 
         Args:
             text: Raw user input from the command bar.
             tree_paths: Known thread paths, used as context/validation.
+            default_root: Root (``work`` or ``personal``) to assume when the
+                note does not clearly name one — set from the active app mode.
 
         Returns:
             An InterpretResult; never raises for ordinary failures.
@@ -113,10 +117,10 @@ class AICommandLayer:
             try:
                 return self._interpret_openai(text, tree_paths)
             except Exception as exc:  # noqa: BLE001 - degrade, never crash the UI
-                fallback = _heuristic(text, tree_paths)
+                fallback = _heuristic(text, tree_paths, default_root)
                 fallback.note = f"AI unavailable ({exc.__class__.__name__}); used heuristic."
                 return fallback
-        result = _heuristic(text, tree_paths)
+        result = _heuristic(text, tree_paths, default_root)
         result.note = "OpenAI key not configured; used local heuristic."
         return result
 
@@ -167,10 +171,12 @@ _DONE_WORDS = re.compile(r"\b(done|finished|completed|complete)\b", re.I)
 _NEW_THREAD = re.compile(r"\b(new|start|create)\b.*\b(project|initiative|thread)\b", re.I)
 
 
-def _heuristic(text: str, tree_paths: list[str]) -> InterpretResult:
+def _heuristic(
+    text: str, tree_paths: list[str], default_root: str = "work"
+) -> InterpretResult:
     """Cheap rule-based interpreter used when the API is not available."""
     root = "work" if re.search(r"\bwork\b", text, re.I) else (
-        "personal" if re.search(r"\bpersonal\b", text, re.I) else "work"
+        "personal" if re.search(r"\bpersonal\b", text, re.I) else default_root
     )
     target = _guess_path(text, tree_paths) or root
     if _NEW_THREAD.search(text):

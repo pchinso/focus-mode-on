@@ -41,8 +41,38 @@ def test_dashboard_after_login(client):
     login(client)
     resp = client.get("/")
     assert resp.status_code == 200
+    # Header mode switch offers both modes...
     assert "WORK" in resp.text.upper()
     assert "PERSONAL" in resp.text.upper()
+    # ...and the default active mode is WORK.
+    assert "Work mode" in resp.text
+
+
+def test_mode_switch_persists(client):
+    login(client)
+    # Default is WORK.
+    assert "Work mode" in client.get("/").text
+    # Switch to PERSONAL; the redirect lands on the personal dashboard.
+    resp = client.post("/mode/personal")
+    assert resp.status_code == 200
+    assert "Personal mode" in resp.text
+    # The cookie persists the choice on a fresh request.
+    assert "Personal mode" in client.get("/").text
+    # An invalid mode falls back to WORK.
+    client.post("/mode/bogus")
+    assert "Work mode" in client.get("/").text
+
+
+def test_command_defaults_thread_to_active_mode(client):
+    login(client)
+    client.post("/mode/personal")
+    # A note that names no root should target the active mode (personal).
+    text = "buy groceries this weekend"
+    resp = client.post(
+        "/command",
+        data={"text": text, "confirm": f"create_task:personal:{text}"},
+    )
+    assert "to personal" in resp.text.lower()
 
 
 def test_command_creates_thread_and_task(client):

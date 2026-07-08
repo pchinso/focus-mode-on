@@ -20,8 +20,11 @@ from .ai.commands import AICommandLayer, Intent
 from .ai.icons import IconGenerator
 from .auth import SESSION_COOKIE, Auth
 from .config import load_settings
-from .vault.model import ARCHIVE_DIR
+from .vault.model import ARCHIVE_DIR, ROOTS
 from .vault.repo import VaultError, VaultRepo
+
+MODE_COOKIE = "focus_mode"
+DEFAULT_MODE = "work"
 
 logger = logging.getLogger("focus_mode_on")
 
@@ -33,6 +36,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 templates.env.globals["app_version"] = __version__
+templates.env.globals["ROOTS"] = ROOTS
 
 repo = VaultRepo(settings.vault_dir)
 auth = Auth(settings.password, settings.secret_key)
@@ -52,6 +56,16 @@ def require_login(request: Request) -> None:
 def _client_key(request: Request) -> str:
     """Best-effort client identifier for rate limiting."""
     return request.client.host if request.client else "unknown"
+
+
+def current_mode(request: Request) -> str:
+    """Return the active app mode (``work`` or ``personal``).
+
+    Reads the mode cookie and falls back to :data:`DEFAULT_MODE` (WORK) when it
+    is absent or invalid.
+    """
+    mode = request.cookies.get(MODE_COOKIE, DEFAULT_MODE)
+    return mode if mode in ROOTS else DEFAULT_MODE
 
 
 @app.exception_handler(303)
@@ -112,16 +126,35 @@ async def logout() -> Response:
 
 @app.get("/", response_class=HTMLResponse, dependencies=[Depends(require_login)])
 async def dashboard(request: Request) -> Response:
-    """Render the entry dashboard with WORK and PERSONAL threads."""
+    """Render the dashboard for the active mode's root (default WORK)."""
+    mode = current_mode(request)
+    active = next((r for r in repo.roots() if r.rel_path == mode), None)
     return templates.TemplateResponse(
         request,
         "dashboard.html",
         {
-            "roots": repo.roots(),
+            "mode": mode,
+            "modes": ROOTS,
+            "active": active,
             "ai_available": ai.available,
             "using_default_password": settings.using_default_password,
         },
     )
+
+
+@app.post("/mode/{mode}", dependencies=[Depends(require_login)])
+async def set_mode(mode: str) -> Response:
+    """Persist the active app mode and return to the dashboard."""
+    chosen = mode if mode in ROOTS else DEFAULT_MODE
+    response = RedirectResponse("/", status_code=303)
+    response.set_cookie(
+        MODE_COOKIE,
+        chosen,
+        httponly=False,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 365,
+    )
+    return response
 
 
 @app.get(
@@ -222,15 +255,16 @@ async def command(
     Low-confidence intents are returned for one-click confirmation unless the
     request already carries ``confirm`` for a specific intent.
     """
+    mode = current_mode(request)
     paths = _all_paths()
-    result = ai.interpret(text, paths)
+    result = ai.interpret(text, paths, default_root=mode)
     applied: list[str] = []
     pending: list[Intent] = []
     for intent in result.intents:
         if intent.needs_confirmation and confirm != _intent_key(intent):
             pending.append(intent)
             continue
-        applied.append(_apply_intent(intent))
+        applied.append(_apply_intent(intent, mode))
     return templates.TemplateResponse(
         request,
         "_command_result.html",
@@ -245,8 +279,14 @@ async def command(
     )
 
 
-def _apply_intent(intent: Intent) -> str:
-    """Execute a single intent, returning a human-readable summary line."""
+def _apply_intent(intent: Intent, mode: str = DEFAULT_MODE) -> str:
+    """Execute a single intent, returning a human-readable summary line.
+
+    Args:
+        intent: The intent to apply.
+        mode: Active app mode, used as the default root for new threads when
+            the intent does not name one.
+    """
     try:
         if intent.action == "create_task":
             thread = repo.add_task(intent.thread_path, intent.title)
@@ -259,7 +299,7 @@ def _apply_intent(intent: Intent) -> str:
                 else f"No pending task matched “{intent.title}”."
             )
         if intent.action == "create_thread":
-            parent = intent.thread_path or "work"
+            parent = intent.thread_path or mode
             thread = repo.create_thread(parent, intent.title)
             _maybe_icon(thread.rel_path, intent.title)
             return f"Created thread {thread.rel_path}."

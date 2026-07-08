@@ -202,6 +202,14 @@
         }
         break;
       }
+      case "m": {
+        const form = document.getElementById("mode-toggle-form");
+        if (form) {
+          ev.preventDefault();
+          form.submit();
+        }
+        break;
+      }
       case "?":
         ev.preventDefault();
         toggleHelp();

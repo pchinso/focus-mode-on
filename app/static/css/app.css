@@ -43,6 +43,49 @@ a:hover {
   text-decoration: none;
 }
 
+/* WORK / PERSONAL mode switch. */
+.mode-switch {
+  display: inline-flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.mode-switch form {
+  margin: 0;
+}
+
+.mode-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+}
+
+.mode-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.mode-btn.active.work {
+  background: var(--energy-coral);
+  color: #fff;
+}
+
+.mode-btn.active.personal {
+  background: var(--water-turquoise);
+  color: #08343a;
+}
+
+.mode-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
 .app-header nav {
   display: flex;
   gap: 1rem;

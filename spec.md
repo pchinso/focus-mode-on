@@ -86,6 +86,7 @@ single-user app does not need; E (CLI/library) lacks the required visual UI.
 | V1-9 | Keyboard-only navigation throughout the UI | new (brief §4.9) |
 | V1-10 | Password-protected access; data transport encrypted (HTTPS) | new (brief §9) |
 | V1-11 | Light and dark mode, Cox visual identity | new (brief §10) |
+| V1-12 | App mode (WORK / PERSONAL): the dashboard shows one root at a time, defaulting to WORK, with a persisted header switch to change context | new (brief §4.2) |
 
 ### 2.2 Excluded from V1 (→ roadmap §9)
 
@@ -111,7 +112,8 @@ application for this app:
 - Red Hat Display packaged with the app (OFL license), fallback Segoe UI.
 - Thread cards and task lists use Planet Blue for structure, Water Turquoise
   for informative accents (PERSONAL), Energy Coral for emphasis (WORK),
-  following the water/energy accent rule.
+  following the water/energy accent rule. The header's WORK/PERSONAL mode
+  switch highlights the active mode with the same accent.
 - Generated thread icons are decorative content, not brand elements; they must
   not recolor or replace the Cox logo.
 
@@ -272,20 +274,29 @@ focus-mode-on/
 ## 6. GUI Functional Specification (V1)
 
 - **Login**: single password field; session cookie on success; rate-limited.
-- **Dashboard (entry point)**: two root sections, WORK and PERSONAL, each
-  listing active thread cards (icon, title, pending count, last activity).
-  A global **command bar** (focused with `/`) accepts natural-language input
-  anywhere in the app.
+- **App mode (WORK / PERSONAL)**: the app is always in exactly one *mode*,
+  which selects the active root. The **default on first entry is WORK**. A
+  two-state switch in the header changes the mode; the choice is persisted (a
+  cookie, so the server renders the correct root) and survives reload and
+  re-login. The mode also biases the command bar: threads and tasks created
+  from natural language default to the active mode's root unless the note
+  names the other one. The header accent follows the mode (Energy Coral for
+  WORK, Water Turquoise for PERSONAL) per the water/energy rule.
+- **Dashboard (entry point)**: shows the active mode's root and its active
+  thread cards (icon, title, pending count, sub-thread count). A global
+  **command bar** (focused with `/`) accepts natural-language input anywhere
+  in the app.
 - **Thread view**: breadcrumb from root; child threads as cards; task list at
   the end with completed tasks above pending ones; actions: add task, toggle
   task, complete thread (→ auto-archive with an undo/restore toast).
 - **Archive view**: browsable archived threads with one-key restore.
 - **Keyboard-only navigation**: `j`/`k` or arrows to move between cards and
   tasks, `Enter` to open, `Space`/`x` to toggle a task, `/` command bar,
-  `a` add task, `c` complete thread, `u` restore, `?` shortcut help overlay,
-  `Esc` back. Every interactive element reachable without a mouse; visible
-  focus ring from theme tokens.
-- **Header**: Cox gradient, app name, light/dark toggle, logout.
+  `a` add task, `c` complete thread, `m` switch WORK/PERSONAL mode, `u`
+  restore, `?` shortcut help overlay, `Esc` back. Every interactive element
+  reachable without a mouse; visible focus ring from theme tokens.
+- **Header**: Cox gradient, app name, WORK/PERSONAL mode switch, light/dark
+  toggle, logout.
 - **Help/About**: shortcut list, version, vault sync status.
 
 ---
@@ -373,8 +384,10 @@ the title; archiving moves the folder under `_archive/` and sets
 
 1. Opening the app URL without a session shows the login page; the correct
    password grants access and a wrong password is rejected with a rate limit.
-2. The dashboard shows WORK and PERSONAL with all active threads from the
-   vault, each with its icon (or fallback glyph), title, and pending count.
+2. On first entry the dashboard is in WORK mode and shows the WORK root's
+   active threads, each with its icon (or fallback glyph), title, and pending
+   count; switching the header mode to PERSONAL shows the PERSONAL root
+   instead, and the choice persists across reload and re-login.
 3. Creating a thread from the command bar ("start a new work project called
    Migration") creates the folder and a lint-clean `thread.md` under
    `vault/work/`, visible in the UI without a manual refresh.

@@ -1,5 +1,8 @@
 {# Result of a command-bar interpretation. #}
-<div class="result">
+<div class="result"{% if applied %} data-applied="1"{% endif %}>
+  {% if applied %}
+  <p class="source refreshing">Applied — refreshing the view…</p>
+  {% endif %}
   {% if note %}<p class="source">{{ note }}</p>{% endif %}
 
   {% if applied %}
@@ -25,6 +28,7 @@
       type="button"
       data-post="/command"
       data-swap="#command-result"
+      data-loading="Applying…"
       data-fields="text={{ raw | urlencode }}&confirm={{ intent_key(intent) | urlencode }}"
     >
       Apply

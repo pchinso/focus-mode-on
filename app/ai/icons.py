@@ -17,6 +17,34 @@ logger = logging.getLogger("focus_mode_on")
 ICON_FILE = "icon.png"
 # gpt-image-1 only supports 1024x1024 / 1024x1536 / 1536x1024 / auto.
 ICON_SIZE = "1024x1024"
+# The UI shows icons at ~42px; store a small square to keep the vault light.
+ICON_STORE_PX = 256
+
+
+def _downscale_png(raw: bytes, size: int = ICON_STORE_PX) -> bytes:
+    """Downscale a PNG to a small square to save space; passthrough on failure.
+
+    Args:
+        raw: Original PNG bytes from the image API (typically ~1 MB at 1024px).
+        size: Target maximum edge length in pixels.
+
+    Returns:
+        Optimized PNG bytes at ``size`` px, or the original bytes if Pillow is
+        unavailable or the image cannot be processed.
+    """
+    try:
+        import io
+
+        from PIL import Image
+
+        with Image.open(io.BytesIO(raw)) as img:
+            img = img.convert("RGBA")
+            img.thumbnail((size, size), Image.LANCZOS)
+            out = io.BytesIO()
+            img.save(out, format="PNG", optimize=True)
+            return out.getvalue()
+    except Exception:  # noqa: BLE001 - never fail icon writing over resizing
+        return raw
 
 
 class IconGenerator:
@@ -81,7 +109,8 @@ class IconGenerator:
             if not b64:
                 return None
             folder.mkdir(parents=True, exist_ok=True)
-            (folder / ICON_FILE).write_bytes(base64.b64decode(b64))
+            png = _downscale_png(base64.b64decode(b64))
+            (folder / ICON_FILE).write_bytes(png)
             return ICON_FILE
         except Exception as exc:  # noqa: BLE001 - non-blocking per spec
             # Best-effort: log so failures are diagnosable, but never raise.

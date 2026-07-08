@@ -463,6 +463,47 @@ main {
   font: inherit;
 }
 
+/* Loading / working indicator. */
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--water-turquoise);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2s;
+  }
+}
+
+.result .refreshing {
+  color: var(--water-turquoise);
+  font-weight: 600;
+}
+
 /* Command result panel. */
 .result {
   border: 1px solid var(--border);

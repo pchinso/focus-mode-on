@@ -30,6 +30,34 @@
   }
 
   /* ---- 2. AJAX swap ---- */
+  // Show an immediate "working" state in a swap target so the UI never looks
+  // frozen while a slow AI request is in flight.
+  function showLoading(targetSel, label) {
+    const node = document.querySelector(targetSel);
+    if (!node) return;
+    node.innerHTML =
+      '<div class="loading" role="status" aria-live="polite">' +
+      '<span class="spinner" aria-hidden="true"></span>' +
+      "<span>" +
+      (label || "Working…") +
+      "</span></div>";
+  }
+
+  // If a swapped-in result reports that it changed the vault (data-applied),
+  // refresh the whole screen so new threads/tasks appear — after briefly
+  // showing the confirmation (preserved across the reload via sessionStorage).
+  function maybeReloadAfter(node) {
+    if (!node || !node.querySelector("[data-applied]")) return;
+    try {
+      sessionStorage.setItem("fmo-command-result", node.innerHTML);
+    } catch (e) {
+      /* ignore */
+    }
+    setTimeout(function () {
+      window.location.reload();
+    }, 1100);
+  }
+
   // A form/button with data-swap="#id" posts and replaces #id's innerHTML.
   async function submitSwap(url, method, body, target) {
     const resp = await fetch(url, {
@@ -53,13 +81,21 @@
       form.addEventListener("submit", async (ev) => {
         ev.preventDefault();
         const target = form.getAttribute("data-swap");
-        await submitSwap(form.action, "POST", new FormData(form), target);
+        const loading = form.getAttribute("data-loading");
+        if (loading) showLoading(target, loading);
+        const node = await submitSwap(
+          form.action,
+          "POST",
+          new FormData(form),
+          target
+        );
         if (form.hasAttribute("data-reset")) form.reset();
         const focusSel = form.getAttribute("data-refocus");
         if (focusSel) {
           const el = form.querySelector(focusSel);
           if (el) el.focus();
         }
+        maybeReloadAfter(node);
       });
     });
   }
@@ -104,7 +140,15 @@
         body.append(decodeURIComponent(k), decodeURIComponent(v || ""));
       });
     if (target) {
-      await submitSwap(el.getAttribute("data-post"), "POST", body, target);
+      const loading = el.getAttribute("data-loading");
+      if (loading) showLoading(target, loading);
+      const node = await submitSwap(
+        el.getAttribute("data-post"),
+        "POST",
+        body,
+        target
+      );
+      maybeReloadAfter(node);
     }
   });
 
@@ -282,6 +326,17 @@
     if (toggle) toggle.addEventListener("click", toggleTheme);
     const closeHelp = document.getElementById("help-close");
     if (closeHelp) closeHelp.addEventListener("click", () => toggleHelp(false));
+    // Restore a command confirmation that survived a post-command reload.
+    try {
+      const saved = sessionStorage.getItem("fmo-command-result");
+      if (saved) {
+        const cr = document.getElementById("command-result");
+        if (cr) cr.innerHTML = saved;
+        sessionStorage.removeItem("fmo-command-result");
+      }
+    } catch (e) {
+      /* ignore */
+    }
     wireSwaps(document);
     indexNavItems();
     // Re-wire swaps for content injected later.

@@ -24,7 +24,10 @@ nested threads (initiatives/projects) identified by a path like \
 "confidence": 0.0}]}
 Valid actions: create_task, complete_task, create_thread, complete_thread, \
 restore_thread. "thread_path" is the target thread's path (best guess from the \
-provided tree). "title" is the task text or new thread title. "confidence" is \
+provided tree). For create_thread, "thread_path" must be the PARENT under which \
+to create the thread (a root like "work"/"personal" or an existing thread \
+path) — do NOT include the new thread's own name in it; the new name goes only \
+in "title". "title" is the task text or new thread title. "confidence" is \
 0..1. Only include intents clearly implied by the note."""
 
 

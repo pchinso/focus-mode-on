@@ -20,7 +20,7 @@ from .ai.commands import AICommandLayer, Intent
 from .ai.icons import IconGenerator
 from .auth import SESSION_COOKIE, Auth
 from .config import load_settings
-from .vault.model import ARCHIVE_DIR, ROOTS
+from .vault.model import ARCHIVE_DIR, ROOTS, slugify
 from .vault.repo import VaultError, VaultRepo
 
 MODE_COOKIE = "focus_mode"
@@ -326,7 +326,7 @@ def _apply_intent(intent: Intent, mode: str = DEFAULT_MODE) -> str:
                 else f"No pending task matched “{intent.title}”."
             )
         if intent.action == "create_thread":
-            parent = intent.thread_path or mode
+            parent = _resolve_parent(intent.thread_path, intent.title, mode)
             thread = repo.create_thread(parent, intent.title)
             _maybe_icon(thread.rel_path, intent.title)
             return f"Created thread {thread.rel_path}."
@@ -339,6 +339,33 @@ def _apply_intent(intent: Intent, mode: str = DEFAULT_MODE) -> str:
     except VaultError as exc:
         return f"Could not apply intent: {exc}"
     return ""
+
+
+def _resolve_parent(thread_path: str, title: str, mode: str) -> str:
+    """Resolve the parent folder for a new thread from a model-supplied path.
+
+    The AI sometimes returns the *new* thread's full path in ``thread_path``
+    (e.g. ``work/dev`` with title ``dev``) instead of just the parent, which
+    would nest the thread inside an identically-named folder (``work/dev/dev``).
+    This strips a trailing segment that duplicates the new thread's own slug,
+    and falls back to the active mode's root when the parent is missing or not
+    under a known root.
+
+    Args:
+        thread_path: Path the model provided (may be empty or a full new path).
+        title: Title of the new thread.
+        mode: Active app mode, used as the default root.
+
+    Returns:
+        A parent path guaranteed to live under a valid root.
+    """
+    parent = (thread_path or "").strip().strip("/")
+    slug = slugify(title)
+    if slug and parent.rsplit("/", 1)[-1] == slug:
+        parent = parent.rsplit("/", 1)[0] if "/" in parent else ""
+    if not parent or parent.split("/", 1)[0] not in ROOTS:
+        parent = mode
+    return parent
 
 
 def _maybe_icon(rel_path: str, title: str) -> None:

@@ -28,6 +28,21 @@ def login(client: TestClient) -> None:
     assert resp.status_code == 303
 
 
+def test_resolve_parent_avoids_double_nesting():
+    """A model-returned full path must not nest a thread inside its own name."""
+    import app.main as main
+
+    # Model returned the NEW thread's full path -> strip the duplicated leaf.
+    assert main._resolve_parent("work/dev", "dev", "work") == "work"
+    # A plain root parent is unchanged.
+    assert main._resolve_parent("work", "dev", "work") == "work"
+    # Nesting under a genuinely different existing thread is preserved.
+    assert main._resolve_parent("work/init", "dev", "work") == "work/init"
+    # Empty or non-root parents fall back to the active mode.
+    assert main._resolve_parent("", "dev", "personal") == "personal"
+    assert main._resolve_parent("dev", "dev", "work") == "work"
+
+
 def test_requires_login(client):
     resp = client.get("/", follow_redirects=False)
     assert resp.status_code == 303

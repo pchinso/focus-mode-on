@@ -42,6 +42,18 @@ Without an `OPENAI_API_KEY` the command bar still works using a local
 heuristic parser, and threads use a generated initials glyph instead of an AI
 icon. Every other feature is fully available.
 
+### Corporate networks (TLS)
+
+On a network with an inspecting proxy, calls to the OpenAI API can fail with
+`CERTIFICATE_VERIFY_FAILED` because the proxy uses a company root CA. The app
+handles this automatically: at startup it (a) ignores `SSL_CERT_FILE` /
+`REQUESTS_CA_BUNDLE` if they point to a missing file, and (b) uses the
+`truststore` package to verify TLS against the operating-system trust store —
+which already trusts your company CA (that's why your browser works). No
+configuration is needed. If AI still shows as unavailable, confirm the key is
+set (`/health` shows `"ai_available": true`) and that the OS trust store
+contains the corporate root certificate.
+
 ## Keyboard shortcuts
 
 `j`/`k` move · `Enter` open · `Space`/`x` toggle a task · `/` command bar ·

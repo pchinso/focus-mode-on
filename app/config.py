@@ -33,6 +33,46 @@ def _load_dotenv() -> None:
         load_dotenv(env_path, override=False)
 
 
+def _sanitize_tls_env() -> None:
+    """Drop TLS CA-bundle env vars that point to a nonexistent file.
+
+    Some corporate setups leave ``SSL_CERT_FILE`` / ``REQUESTS_CA_BUNDLE``
+    pointing at a certificate path that does not exist. Python's ssl/httpx read
+    those variables, so a missing file makes *every* HTTPS client (including the
+    OpenAI SDK) fail to initialize — which silently disables AI features. When
+    the referenced file is missing we remove the variable so TLS falls back to
+    the default trust store (certifi), restoring outbound HTTPS.
+    """
+    for var in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE"):
+        path = os.environ.get(var)
+        if path and not Path(path).exists():
+            logger.warning(
+                "%s points to a missing file (%s); ignoring it so HTTPS can use "
+                "the default trust store.",
+                var,
+                path,
+            )
+            del os.environ[var]
+
+
+def _enable_os_truststore() -> None:
+    """Make Python verify TLS against the operating-system trust store.
+
+    On corporate networks an inspecting proxy presents certificates signed by a
+    company root CA that lives in the OS trust store (so browsers work) but not
+    in certifi's public bundle — which makes outbound HTTPS (e.g. the OpenAI
+    API) fail with ``CERTIFICATE_VERIFY_FAILED``. ``truststore`` routes
+    verification through the OS store, fixing this transparently. Best-effort:
+    if ``truststore`` is unavailable, verification falls back to certifi.
+    """
+    try:
+        import truststore
+
+        truststore.inject_into_ssl()
+    except Exception:  # noqa: BLE001 - never let cert setup crash startup
+        pass
+
+
 @dataclass(frozen=True)
 class Settings:
     """Effective application settings.
@@ -61,6 +101,8 @@ def load_settings() -> Settings:
         falls back to :data:`DEFAULT_PASSWORD` with a warning.
     """
     _load_dotenv()
+    _sanitize_tls_env()
+    _enable_os_truststore()
 
     default_vault = Path(__file__).resolve().parent.parent / "vault"
     vault_dir = Path(os.environ.get("VAULT_DIR", str(default_vault))).resolve()

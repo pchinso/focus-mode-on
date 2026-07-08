@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Log in — Focus Mode On</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("focus-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="/static/css/tokens.css" />
+    <link rel="stylesheet" href="/static/css/app.css" />
+  </head>
+  <body>
+    <div class="login-wrap">
+      <form class="login-card" action="/login" method="post">
+        <h1>◆ Focus Mode On</h1>
+        <p class="tag">Personal task management</p>
+        {% if error %}
+        <p class="login-error">{{ error }}</p>
+        {% endif %}
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          autofocus
+          autocomplete="current-password"
+        />
+        <button class="btn" type="submit">Enter</button>
+        <p class="kbd-hint">Press <kbd>?</kbd> anywhere for shortcuts</p>
+      </form>
+    </div>
+  </body>
+</html>

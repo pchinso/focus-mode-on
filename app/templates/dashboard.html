@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block content %}
+{% if using_default_password %}
+<div class="notice">
+  Running with the default password. Set <kbd>APP_PASSWORD</kbd> before exposing
+  this app.
+</div>
+{% endif %}
+
+<form
+  class="command-bar"
+  action="/command"
+  method="post"
+  data-swap="#command-result"
+  data-reset
+  data-refocus="#command-input"
+>
+  <input
+    type="text"
+    id="command-input"
+    name="text"
+    placeholder="{% if ai_available %}Type naturally: “finished the supplier call in project y”{% else %}Command bar (heuristic mode — no AI key set){% endif %}"
+    autocomplete="off"
+  />
+  <button class="btn" type="submit">Run</button>
+</form>
+
+<div id="command-result"></div>
+
+{% for root in roots %}
+<section class="root-section">
+  <div class="root-title {{ root.rel_path }}">
+    <h2>{{ root.title }}</h2>
+    <span class="pill">{{ root.children | length }} thread{{ 's' if root.children | length != 1 else '' }}</span>
+  </div>
+  {% if root.children %}
+  <div class="cards">
+    {% for thread in root.children %}
+    {{ ui.thread_card(thread) }}
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">No threads yet. Use the command bar to start one.</p>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

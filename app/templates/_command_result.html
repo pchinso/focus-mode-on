@@ -1,0 +1,39 @@
+{# Result of a command-bar interpretation. #}
+<div class="result">
+  {% if note %}<p class="source">{{ note }}</p>{% endif %}
+
+  {% if applied %}
+  <strong>Done</strong>
+  <ul>
+    {% for line in applied %}
+    <li>{{ line }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if pending %}
+  <strong>Confirm these low-confidence actions</strong>
+  {% for intent in pending %}
+  <div class="confirm-row">
+    <span>
+      {{ intent.action.replace('_', ' ') }} —
+      <em>{{ intent.title or intent.thread_path }}</em>
+      <span class="source">({{ '%.0f' | format(intent.confidence * 100) }}%)</span>
+    </span>
+    <button
+      class="btn secondary"
+      type="button"
+      data-post="/command"
+      data-swap="#command-result"
+      data-fields="text={{ raw | urlencode }}&confirm={{ intent_key(intent) | urlencode }}"
+    >
+      Apply
+    </button>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if not applied and not pending %}
+  <p class="empty">Nothing to do from “{{ raw }}”.</p>
+  {% endif %}
+</div>

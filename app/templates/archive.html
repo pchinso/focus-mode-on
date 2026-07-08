@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}Archive — Focus Mode On{% endblock %}
+
+{% block content %}
+<h1 style="margin-top: 0">Archive</h1>
+<p class="description">Completed threads. Restore any of them back to its place.</p>
+
+{% if archived %}
+<div class="cards">
+  {% for thread in archived %}
+  <div class="card" data-nav tabindex="0">
+    <span
+      class="icon"
+      style="background: {% if thread.rel_path.split('/')[0] == 'work' %}var(--accent-work){% else %}var(--accent-personal){% endif %}"
+      >{{ ui.initials(thread.title) }}</span
+    >
+    <span class="meta">
+      <span class="name">{{ thread.title }}</span>
+      <span class="sub">
+        {% if thread.completed %}archived {{ thread.completed.isoformat() }}{% else %}archived{% endif %}
+      </span>
+    </span>
+    <form
+      action="/restore/{{ thread.rel_path }}"
+      method="post"
+      style="margin-left: auto"
+    >
+      <button class="btn secondary" type="submit">↩ Restore</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">Nothing archived yet.</p>
+{% endif %}
+{% endblock %}

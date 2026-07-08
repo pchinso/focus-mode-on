@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Focus Mode On{% endblock %}</title>
+    <script>
+      // Apply the persisted theme before paint to avoid a flash.
+      (function () {
+        try {
+          var t = localStorage.getItem("focus-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="/static/css/tokens.css" />
+    <link rel="stylesheet" href="/static/css/app.css" />
+  </head>
+  <body>
+    {% block chrome %}
+    <header class="app-header">
+      <a class="brand" href="/">◆ Focus Mode On</a>
+      <nav>
+        <a href="/" data-nav>Dashboard</a>
+        <a href="/archive" data-nav>Archive</a>
+        <button id="theme-toggle" type="button" title="Toggle light/dark">
+          ◐ Theme
+        </button>
+        <form action="/logout" method="post" style="display: inline">
+          <button type="submit">Log out</button>
+        </form>
+      </nav>
+    </header>
+    {% endblock %}
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <div id="help-overlay" class="overlay" hidden>
+      <div class="panel">
+        <h2>Keyboard shortcuts</h2>
+        <table>
+          <tr><td><kbd>j</kbd> / <kbd>k</kbd></td><td>Move down / up</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>Open / activate</td></tr>
+          <tr><td><kbd>Space</kbd> / <kbd>x</kbd></td><td>Toggle task</td></tr>
+          <tr><td><kbd>/</kbd></td><td>Command bar</td></tr>
+          <tr><td><kbd>a</kbd></td><td>Add task</td></tr>
+          <tr><td><kbd>c</kbd></td><td>Complete thread</td></tr>
+          <tr><td><kbd>?</kbd></td><td>This help</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Back / close</td></tr>
+        </table>
+        <p style="margin-bottom: 0">
+          <button id="help-close" class="btn secondary" type="button">Close</button>
+        </p>
+      </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>

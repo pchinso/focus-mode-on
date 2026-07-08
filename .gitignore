@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# Environment / secrets
+.env
+
+# Generated thread icons (regenerated on demand)
+vault/**/icon.png
+
+# Archived threads created at runtime
+vault/_archive/

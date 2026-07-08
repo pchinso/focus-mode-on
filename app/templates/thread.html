@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}{{ thread.title }} — Focus Mode On{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="/">Dashboard</a>
+  {% set parts = thread.rel_path.split('/') %}
+  {% set ns = namespace(acc='') %}
+  {% for part in parts %}
+    {% set ns.acc = ns.acc ~ ('/' if ns.acc else '') ~ part %}
+    / <a href="/thread/{{ ns.acc }}">{{ part.replace('-', ' ') | title }}</a>
+  {% endfor %}
+</div>
+
+<div class="thread-head">
+  {% if thread.icon %}
+  <img class="icon" src="/icon/{{ thread.rel_path }}" alt="" />
+  {% else %}
+  <span
+    class="icon"
+    style="background: {% if thread.root == 'work' %}var(--accent-work){% else %}var(--accent-personal){% endif %}"
+    >{{ ui.initials(thread.title) }}</span
+  >
+  {% endif %}
+  <h1>{{ thread.title }}</h1>
+  <div class="thread-actions">
+    <form action="/complete/{{ thread.rel_path }}" method="post">
+      <button id="complete-thread" class="btn secondary" type="submit">
+        ✓ Complete &amp; archive
+      </button>
+    </form>
+  </div>
+</div>
+
+{% if thread.description %}
+<p class="description">{{ thread.description }}</p>
+{% endif %}
+
+{% if thread.children %}
+<div class="cards" style="margin-bottom: 1.75rem">
+  {% for child in thread.children %}
+  {{ ui.thread_card(child) }}
+  {% endfor %}
+</div>
+{% endif %}
+
+<h3 style="margin: 0 0 0.6rem">Tasks</h3>
+<div id="task-list">
+  {% include "_tasks.html" %}
+</div>
+
+<form
+  class="task-add"
+  action="/thread/{{ thread.rel_path }}/task"
+  method="post"
+  data-swap="#task-list"
+  data-reset
+  data-refocus="#task-input"
+>
+  <input
+    type="text"
+    id="task-input"
+    name="title"
+    placeholder="Add a task…  (press a)"
+    autocomplete="off"
+  />
+  <button class="btn" type="submit">Add</button>
+</form>
+{% endblock %}

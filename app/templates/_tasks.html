@@ -1,0 +1,25 @@
+{# Task list partial. Completed tasks appear above pending ones. #}
+{% set ordered = thread.sorted_tasks() %}
+{% if ordered %}
+<ul class="tasks">
+  {% for task in ordered %}
+  <li
+    class="task {{ 'done' if task.done else '' }}"
+    data-nav="task"
+    data-post="/thread/{{ thread.rel_path }}/toggle/{{ loop.index0 }}"
+    data-swap="#task-list"
+    tabindex="0"
+    role="checkbox"
+    aria-checked="{{ 'true' if task.done else 'false' }}"
+  >
+    <span class="box">{{ '✓' if task.done else '' }}</span>
+    <span class="label">{{ task.title }}</span>
+    {% if task.done and task.completed %}
+    <span class="date">{{ task.completed.isoformat() }}</span>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="empty">No tasks yet. Press <kbd>a</kbd> to add one.</p>
+{% endif %}

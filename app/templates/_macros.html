@@ -1,0 +1,27 @@
+{# Reusable UI fragments. #}
+
+{% macro glyph_color(thread) -%}
+{%- if thread.root == 'work' -%}var(--accent-work){%- else -%}var(--accent-personal){%- endif -%}
+{%- endmacro %}
+
+{% macro initials(title) -%}
+{{ (title[:2] | upper) if title else '··' }}
+{%- endmacro %}
+
+{% macro thread_card(thread) %}
+<a class="card" href="/thread/{{ thread.rel_path }}" data-nav>
+  {% if thread.icon %}
+  <img class="icon" src="/icon/{{ thread.rel_path }}" alt="" />
+  {% else %}
+  <span class="icon" style="background: {{ glyph_color(thread) }}">{{ initials(thread.title) }}</span>
+  {% endif %}
+  <span class="meta">
+    <span class="name">{{ thread.title }}</span>
+    <span class="sub">
+      {% set pc = thread.pending_count %}
+      {% if pc %}{{ pc }} pending{% else %}all done{% endif %}
+      {% if thread.children %} · {{ thread.children | length }} sub-thread{{ 's' if thread.children | length != 1 else '' }}{% endif %}
+    </span>
+  </span>
+</a>
+{% endmacro %}

@@ -16,6 +16,11 @@
   // (e.g. several "### Input" headings under different engines).
   "MD024": { "siblings_only": true },
 
+  // Vault thread files intentionally carry a YAML `title:` (consumed by the
+  // app) AND a visible `# Heading` (for readability outside the app). Do not
+  // treat the front-matter title as a second H1.
+  "MD025": { "front_matter_title": "" },
+
   // Allow occasional inline HTML when needed (e.g. <br> inside a table cell).
   "MD033": false
 }

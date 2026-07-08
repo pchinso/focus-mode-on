@@ -1,0 +1,93 @@
+/* Cox visual identity tokens.
+ *
+ * Brand primaries/secondaries are invariant across modes; only the functional
+ * tokens (backgrounds, borders, text) change between light and dark. Components
+ * must read these variables and never hardcode a color or a raw white.
+ */
+
+:root {
+  /* Brand primaries [NORMATIVE — invariant] */
+  --planet-blue: #283198;
+  --water-turquoise: #2cb8c7;
+  --energy-coral: #ed696a;
+
+  /* Brand secondaries */
+  --light-water: #9fd6df;
+  --light-coral: #f5aca4;
+  --dark-water: #11717b;
+  --dark-coral: #a13838;
+  --angel-blue: #bdc5e3;
+  --moon-grey: #eaeded;
+  --night-grey: #43464f;
+
+  --gradient: linear-gradient(
+    90deg,
+    var(--planet-blue) 0%,
+    var(--water-turquoise) 55%,
+    var(--energy-coral) 100%
+  );
+}
+
+/* Light mode (default). */
+:root,
+:root[data-theme="light"] {
+  --bg-app: #f4f6fb;
+  --bg-panel: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #f0f3f9;
+  --row-even: #f7f9fd;
+  --border: #dfe4ee;
+  --border-soft: #eceff5;
+  --text-main: #1c2030;
+  --text-soft: #5b6172;
+  --text-link: var(--planet-blue);
+  --nav-bg: var(--planet-blue);
+  --hover-bg: #eef1f8;
+  --select-bg: var(--angel-blue);
+  --focus-ring: var(--water-turquoise);
+  --accent-work: var(--energy-coral);
+  --accent-personal: var(--water-turquoise);
+  --shadow: 0 1px 3px rgba(28, 32, 48, 0.08), 0 4px 16px rgba(28, 32, 48, 0.06);
+}
+
+/* Dark mode. */
+:root[data-theme="dark"] {
+  --bg-app: #14161f;
+  --bg-panel: #1c1f2b;
+  --surface: #222633;
+  --surface-alt: #191c26;
+  --row-even: #20242f;
+  --border: #333849;
+  --border-soft: #2a2f3d;
+  --text-main: #eceef5;
+  --text-soft: #9aa1b4;
+  --text-link: var(--light-water);
+  --nav-bg: #1a1d29;
+  --hover-bg: #2a2f3d;
+  --select-bg: #2f3550;
+  --focus-ring: var(--water-turquoise);
+  --accent-work: var(--light-coral);
+  --accent-personal: var(--light-water);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-app: #14161f;
+    --bg-panel: #1c1f2b;
+    --surface: #222633;
+    --surface-alt: #191c26;
+    --row-even: #20242f;
+    --border: #333849;
+    --border-soft: #2a2f3d;
+    --text-main: #eceef5;
+    --text-soft: #9aa1b4;
+    --text-link: var(--light-water);
+    --nav-bg: #1a1d29;
+    --hover-bg: #2a2f3d;
+    --select-bg: #2f3550;
+    --accent-work: var(--light-coral);
+    --accent-personal: var(--light-water);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.35);
+  }
+}

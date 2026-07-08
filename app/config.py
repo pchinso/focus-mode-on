@@ -18,6 +18,21 @@ logger = logging.getLogger("focus_mode_on")
 DEFAULT_PASSWORD = "focus"
 
 
+def _load_dotenv() -> None:
+    """Load a project-root ``.env`` into the environment, if present.
+
+    Best-effort: does nothing when ``python-dotenv`` is unavailable. Real
+    environment variables always take precedence over ``.env`` values.
+    """
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+    if env_path.exists():
+        load_dotenv(env_path, override=False)
+
+
 @dataclass(frozen=True)
 class Settings:
     """Effective application settings.
@@ -45,6 +60,8 @@ def load_settings() -> Settings:
         per-process key (sessions reset on restart); missing ``APP_PASSWORD``
         falls back to :data:`DEFAULT_PASSWORD` with a warning.
     """
+    _load_dotenv()
+
     default_vault = Path(__file__).resolve().parent.parent / "vault"
     vault_dir = Path(os.environ.get("VAULT_DIR", str(default_vault))).resolve()
 

@@ -19,17 +19,53 @@ ROOTS = ("work", "personal")
 
 @dataclass
 class Task:
-    """A single checklist item inside a thread.
+    """A checklist item inside a thread — the node of an unbounded task tree.
+
+    Tasks nest without limit: any task may contain child tasks (subtasks),
+    which may themselves contain further children. On disk this is a nested
+    Markdown checklist (indented ``- [ ]`` items).
 
     Attributes:
         title: Human-readable task text.
         done: Whether the task is completed.
         completed: Completion date, set when ``done`` is True.
+        children: Nested subtasks (may be arbitrarily deep).
     """
 
     title: str
     done: bool = False
     completed: date | None = None
+    children: list["Task"] = field(default_factory=list)
+
+    @property
+    def has_children(self) -> bool:
+        """True when this task has at least one subtask."""
+        return bool(self.children)
+
+    def ordered_children(self) -> list["Task"]:
+        """Return children with completed ones first (stable within a level)."""
+        return order_tasks(self.children)
+
+
+def order_tasks(tasks: list[Task]) -> list[Task]:
+    """Order a list of sibling tasks with completed ones before pending ones.
+
+    Relative order within each group is preserved. Applied at every level of
+    the tree so completed items rise to the top consistently.
+    """
+    done = [t for t in tasks if t.done]
+    pending = [t for t in tasks if not t.done]
+    return done + pending
+
+
+def count_pending(tasks: list[Task]) -> int:
+    """Count not-done tasks across a whole subtree (recursively)."""
+    total = 0
+    for task in tasks:
+        if not task.done:
+            total += 1
+        total += count_pending(task.children)
+    return total
 
 
 @dataclass
@@ -71,14 +107,16 @@ class Thread:
 
     @property
     def pending_count(self) -> int:
-        """Number of not-yet-done tasks in this thread only."""
-        return sum(1 for t in self.tasks if not t.done)
+        """Number of not-yet-done tasks in this thread, counting all subtasks."""
+        return count_pending(self.tasks)
 
     def sorted_tasks(self) -> list[Task]:
-        """Return tasks with completed ones first, preserving relative order."""
-        done = [t for t in self.tasks if t.done]
-        pending = [t for t in self.tasks if not t.done]
-        return done + pending
+        """Return top-level tasks with completed ones first (stable)."""
+        return order_tasks(self.tasks)
+
+    def ordered_tasks(self) -> list[Task]:
+        """Alias of :meth:`sorted_tasks`; the top of the recursive task tree."""
+        return order_tasks(self.tasks)
 
 
 def slugify(title: str) -> str:

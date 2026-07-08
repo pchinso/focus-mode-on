@@ -64,6 +64,31 @@
     });
   }
 
+  // Delegated handler: collapse/expand a task's subtree via its caret.
+  document.addEventListener("click", (ev) => {
+    const caret = ev.target.closest("[data-toggle-collapse]");
+    if (!caret) return;
+    ev.preventDefault();
+    const item = caret.closest(".task-item");
+    if (item) item.classList.toggle("collapsed");
+  });
+
+  // Delegated handler: reveal a task's inline "add subtask" form.
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("[data-add-sub]");
+    if (!btn) return;
+    ev.preventDefault();
+    const item = btn.closest(".task-item");
+    const form = item && item.querySelector(":scope > .subtask-form");
+    if (form) {
+      form.hidden = !form.hidden;
+      if (!form.hidden) {
+        const input = form.querySelector('input[type="text"]');
+        if (input) input.focus();
+      }
+    }
+  });
+
   // Delegated handler for elements that post on click (task toggles, confirms).
   document.addEventListener("click", async (ev) => {
     const el = ev.target.closest("[data-post]");
@@ -110,6 +135,21 @@
 
   function activeItem() {
     return navIndex >= 0 ? navItems[navIndex] : null;
+  }
+
+  // Trigger the toggle (checkbox) inside a focused task row.
+  function clickToggle(row) {
+    if (!row) return;
+    const toggle = row.querySelector("[data-post]");
+    if (toggle) toggle.click();
+  }
+
+  // Collapse or expand the subtree of a focused task row.
+  function setCollapsed(row, collapsed) {
+    if (!row) return;
+    const item = row.closest(".task-item");
+    if (!item || !item.querySelector(":scope > .subtasks")) return;
+    item.classList.toggle("collapsed", collapsed);
   }
 
   function isTyping(ev) {
@@ -171,7 +211,7 @@
         const item = activeItem();
         if (item) {
           ev.preventDefault();
-          if (item.dataset.nav === "task") item.click();
+          if (item.dataset.nav === "task") clickToggle(item);
           else if (item.href) window.location.href = item.href;
           else item.click();
         }
@@ -182,7 +222,24 @@
         const item = activeItem();
         if (item && item.dataset.nav === "task") {
           ev.preventDefault();
-          item.click();
+          clickToggle(item);
+        }
+        break;
+      }
+      case "ArrowRight":
+        setCollapsed(activeItem(), false);
+        break;
+      case "ArrowLeft":
+        setCollapsed(activeItem(), true);
+        break;
+      case "+":
+      case "s": {
+        // Add a subtask under the focused task.
+        const item = activeItem();
+        const btn = item && item.querySelector("[data-add-sub]");
+        if (btn) {
+          ev.preventDefault();
+          btn.click();
         }
         break;
       }

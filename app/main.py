@@ -191,10 +191,22 @@ async def thread_view(request: Request, rel_path: str) -> Response:
     response_class=HTMLResponse,
     dependencies=[Depends(require_login)],
 )
-async def add_task(request: Request, rel_path: str, title: str = Form(...)) -> Response:
-    """Add a task and return the refreshed task-list partial."""
+async def add_task(
+    request: Request,
+    rel_path: str,
+    title: str = Form(...),
+    parent: str = Form(""),
+) -> Response:
+    """Add a task (optionally a subtask) and return the task-list partial.
+
+    ``parent`` is a dotted index-path (e.g. ``0.2``) of the task to nest under;
+    empty means a top-level task.
+    """
     if title.strip():
-        repo.add_task(rel_path, title)
+        try:
+            repo.add_task(rel_path, title, _parse_task_path(parent))
+        except VaultError:
+            raise HTTPException(status_code=400, detail="Invalid parent task")
     thread = repo.get(rel_path)
     return templates.TemplateResponse(
         request, "_tasks.html", {"thread": thread}
@@ -202,20 +214,35 @@ async def add_task(request: Request, rel_path: str, title: str = Form(...)) -> R
 
 
 @app.post(
-    "/thread/{rel_path:path}/toggle/{index}",
+    "/thread/{rel_path:path}/toggle/{task_path}",
     response_class=HTMLResponse,
     dependencies=[Depends(require_login)],
 )
-async def toggle_task(request: Request, rel_path: str, index: int) -> Response:
-    """Toggle a task and return the refreshed task-list partial."""
+async def toggle_task(request: Request, rel_path: str, task_path: str) -> Response:
+    """Toggle a task at a dotted index-path and return the task-list partial."""
     try:
-        repo.toggle_task(rel_path, index)
+        repo.toggle_task(rel_path, _parse_task_path(task_path))
     except VaultError:
         raise HTTPException(status_code=400, detail="Invalid task")
     thread = repo.get(rel_path)
     return templates.TemplateResponse(
         request, "_tasks.html", {"thread": thread}
     )
+
+
+def _parse_task_path(raw: str) -> list[int]:
+    """Parse a dotted index-path like ``0.2.1`` into ``[0, 2, 1]``.
+
+    Returns an empty list for empty input. Raises no error on malformed
+    segments beyond what int() would; callers treat failures as bad requests.
+    """
+    raw = (raw or "").strip()
+    if not raw:
+        return []
+    try:
+        return [int(part) for part in raw.split(".") if part != ""]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Malformed task path")
 
 
 @app.post("/complete/{rel_path:path}", dependencies=[Depends(require_login)])

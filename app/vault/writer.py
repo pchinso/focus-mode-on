@@ -11,7 +11,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from .model import THREAD_FILE, Thread
+from .model import THREAD_FILE, Task, Thread, order_tasks
 
 
 def _fmt_date(value: object) -> str:
@@ -45,14 +45,28 @@ def render_thread(thread: Thread) -> str:
         lines.append("")
     lines.append("## Tasks")
     lines.append("")
-    for task in thread.sorted_tasks():
-        if task.done:
-            stamp = f" ✅ {task.completed.isoformat()}" if task.completed else ""
-            lines.append(f"- [x] {task.title}{stamp}")
-        else:
-            lines.append(f"- [ ] {task.title}")
+    _render_tasks(thread.tasks, 0, lines)
     lines.append("")
     return "\n".join(lines).rstrip("\n") + "\n"
+
+
+def _render_tasks(tasks: list[Task], depth: int, lines: list[str]) -> None:
+    """Append a nested checklist to ``lines``, completed-first at each level.
+
+    Args:
+        tasks: Sibling tasks to render.
+        depth: Current nesting depth (two spaces of indent per level).
+        lines: Output accumulator, mutated in place.
+    """
+    indent = "  " * depth
+    for task in order_tasks(tasks):
+        if task.done:
+            stamp = f" ✅ {task.completed.isoformat()}" if task.completed else ""
+            lines.append(f"{indent}- [x] {task.title}{stamp}")
+        else:
+            lines.append(f"{indent}- [ ] {task.title}")
+        if task.children:
+            _render_tasks(task.children, depth + 1, lines)
 
 
 def write_thread(base: Path, thread: Thread) -> Path:

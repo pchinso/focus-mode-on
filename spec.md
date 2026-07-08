@@ -87,6 +87,7 @@ single-user app does not need; E (CLI/library) lacks the required visual UI.
 | V1-10 | Password-protected access; data transport encrypted (HTTPS) | new (brief §9) |
 | V1-11 | Light and dark mode, Cox visual identity | new (brief §10) |
 | V1-12 | App mode (WORK / PERSONAL): the dashboard shows one root at a time, defaulting to WORK, with a persisted header switch to change context | new (brief §4.2) |
+| V1-13 | Unbounded hierarchy: threads nest as folders and tasks nest as subtasks to any depth, with no visible nesting limit; the UI conveys depth through indentation, breadcrumbs, and expand/collapse | new (brief §2) |
 
 ### 2.2 Excluded from V1 (→ roadmap §9)
 
@@ -236,8 +237,10 @@ focus-mode-on/
 ### 5.1 Vault Engine (`app/vault/`)
 
 - **Function**: canonical read/write layer over the Markdown vault.
-- **Logic**: parse frontmatter + task checkboxes into Thread/Task models;
-  write back in canonical form (completed tasks listed above pending ones);
+- **Logic**: parse frontmatter + a **nested** task checklist into Thread/Task
+  models (tasks form an unbounded tree via indentation); write back in
+  canonical form (two-space indent per level, completed above pending at every
+  level); add tasks or subtasks by index-path; toggle any node by index-path;
   move completed threads to `_archive/` mirroring their path; restore them.
 - **Input**: vault directory. **Output**: models for the UI, `.md` files on
   disk. **Dependencies**: `python-frontmatter`, `markdown-it-py`, GitPython
@@ -266,8 +269,12 @@ focus-mode-on/
 
 - **Function**: interpret vault files into the visual, interactive UI.
 - **Logic**: dashboard of thread cards; thread page with breadcrumb, children,
-  and the task list (completed above pending); HTMX partials for mutations;
-  keyboard layer (§6). **Dependencies**: Jinja2, HTMX, tokens.css.
+  and a **recursive task tree** (a self-referencing template macro rendering
+  indentation, subtask counts, expand/collapse carets, and per-task add-subtask
+  forms) with completed items above pending at each level; partial swaps for
+  mutations; keyboard layer (§6). Tasks are addressed by a dotted index-path
+  (e.g. `0.2.1`) into the ordered tree, recomputed on each render.
+  **Dependencies**: Jinja2, vendored `app.js`, tokens.css.
 
 ---
 
@@ -286,15 +293,25 @@ focus-mode-on/
   thread cards (icon, title, pending count, sub-thread count). A global
   **command bar** (focused with `/`) accepts natural-language input anywhere
   in the app.
-- **Thread view**: breadcrumb from root; child threads as cards; task list at
-  the end with completed tasks above pending ones; actions: add task, toggle
-  task, complete thread (→ auto-archive with an undo/restore toast).
+- **Thread view**: breadcrumb from root; child threads as cards; a **task
+  tree** at the end with completed tasks above pending ones at every level.
+  Actions: add task, add subtask (nest under any task), toggle task at any
+  depth, complete thread (→ auto-archive with an undo/restore toast).
+- **Hierarchy legibility (no depth limit)**: the interface makes nesting easy
+  to read through (a) **breadcrumbs** for the thread path, (b) **indentation**
+  and a guide line for each task level, (c) a per-task **subtask count**, and
+  (d) **expand/collapse** carets on any task that has children. There is no
+  visible limit on how deep threads or tasks may nest; the UI simply indents
+  and lets the container scroll. Adding a subtask is available on every task
+  row (hover control or the `s` shortcut).
 - **Archive view**: browsable archived threads with one-key restore.
 - **Keyboard-only navigation**: `j`/`k` or arrows to move between cards and
-  tasks, `Enter` to open, `Space`/`x` to toggle a task, `/` command bar,
-  `a` add task, `c` complete thread, `m` switch WORK/PERSONAL mode, `u`
-  restore, `?` shortcut help overlay, `Esc` back. Every interactive element
-  reachable without a mouse; visible focus ring from theme tokens.
+  tasks, `Enter` to open, `Space`/`x` to toggle a task, `←`/`→` to
+  collapse/expand a task's subtree, `s` to add a subtask under the focused
+  task, `/` command bar, `a` add task, `c` complete thread, `m` switch
+  WORK/PERSONAL mode, `u` restore, `?` shortcut help overlay, `Esc` back.
+  Every interactive element reachable without a mouse; visible focus ring from
+  theme tokens.
 - **Header**: Cox gradient, app name, WORK/PERSONAL mode switch, light/dark
   toggle, logout.
 - **Help/About**: shortcut list, version, vault sync status.
@@ -323,6 +340,17 @@ row above.
 ---
 
 ## 8. Data Model
+
+The model is hierarchical at **two levels**, both without a fixed depth limit:
+
+1. **Threads** nest via the filesystem — a thread folder may contain any number
+   of child thread folders, to any depth.
+2. **Tasks** nest via indented Markdown checklists — any task may contain
+   subtasks, which may contain further subtasks, to any depth.
+
+Together these give an unbounded activity hierarchy: root → sub-thread → … →
+task → subtask → …. Completed items are ordered before pending ones at every
+level, in both the thread tree and each task subtree.
 
 The vault is a directory tree; hierarchy in the filesystem mirrors the thread
 hierarchy. Every thread is a folder with a `thread.md`:
@@ -360,7 +388,15 @@ Short free-text description of the thread.
 
 - [x] Draft the kickoff note ✅ 2026-07-08
 - [ ] Call supplier about quote
+  - [ ] Prepare the requirements list
+    - [ ] Confirm the delivery date
+  - [ ] Send the purchase order
 ```
+
+Nesting is expressed with two spaces of indentation per level. The parser
+reconstructs the tree from indentation (tabs and other consistent widths are
+tolerated on read); the writer always emits a canonical two-space indent so
+the file stays markdownlint-clean and readable in any editor or Obsidian.
 
 Conventions: dates in ISO `YYYY-MM-DD`; completed tasks carry a completion
 date and are ordered above pending ones; folder names are kebab-case slugs of
@@ -410,6 +446,11 @@ the title; archiving moves the folder under `_archive/` and sets
     the UI shows an actionable error for AI features.
 11. After any mutation, a git commit exists in the vault repo describing the
     change; on restart the app restores state from the repo.
+12. A task can be given a subtask, that subtask another subtask, and so on with
+    no visible limit; the nested structure renders with indentation and
+    expand/collapse, round-trips through the `.md` file as an indented
+    checklist, and toggling a deeply nested item marks exactly that item (and
+    only it) done both in the UI and on disk.
 
 ---
 

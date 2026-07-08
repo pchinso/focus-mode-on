@@ -13,7 +13,15 @@ from datetime import date
 from pathlib import Path
 
 from . import sync
-from .model import ARCHIVE_DIR, ROOTS, THREAD_FILE, Task, Thread, slugify
+from .model import (
+    ARCHIVE_DIR,
+    ROOTS,
+    THREAD_FILE,
+    Task,
+    Thread,
+    order_tasks,
+    slugify,
+)
 from .parser import load_tree, parse_thread_file
 from .writer import write_thread
 
@@ -120,36 +128,64 @@ class VaultRepo:
             self._record(f"Create thread {rel}")
             return thread
 
-    def add_task(self, rel_path: str, title: str) -> Thread:
-        """Append a pending task to a thread."""
+    def add_task(
+        self, rel_path: str, title: str, parent_path: list[int] | None = None
+    ) -> Thread:
+        """Add a task, optionally nested under an existing task.
+
+        Args:
+            rel_path: Thread to add the task to.
+            title: Task text.
+            parent_path: Index-path of the parent task (see :meth:`toggle_task`)
+                to nest under; ``None`` or empty appends at the top level.
+
+        Returns:
+            The reloaded thread.
+        """
         with self._lock:
             thread = self.get(rel_path)
-            thread.tasks.append(Task(title=title.strip(), done=False))
+            new_task = Task(title=title.strip(), done=False)
+            if parent_path:
+                parent = _resolve_task(thread.tasks, parent_path)
+                parent.children.append(new_task)
+                where = f"{thread.rel_path} under “{parent.title}”"
+            else:
+                thread.tasks.append(new_task)
+                where = thread.rel_path
             write_thread(self.base, thread)
-            self._record(f"Add task to {thread.rel_path}: {title.strip()}")
+            self._record(f"Add task to {where}: {title.strip()}")
             return thread
 
-    def toggle_task(self, rel_path: str, index: int) -> Thread:
-        """Toggle the done state of the task at ``index`` (display order)."""
+    def toggle_task(self, rel_path: str, path: list[int]) -> Thread:
+        """Toggle the done state of the task at an index-path.
+
+        The index-path addresses a node in the completed-first ordered task
+        tree: ``[0]`` is the first top-level task, ``[0, 2]`` is that task's
+        third child, and so on — supporting unlimited depth.
+
+        Args:
+            rel_path: Thread containing the task.
+            path: Non-empty list of indices into the ordered task tree.
+
+        Returns:
+            The reloaded thread.
+        """
         with self._lock:
             thread = self.get(rel_path)
-            ordered = thread.sorted_tasks()
-            if not 0 <= index < len(ordered):
-                raise VaultError(f"Task index out of range: {index}")
-            task = ordered[index]
+            task = _resolve_task(thread.tasks, path)
             task.done = not task.done
             task.completed = self._today() if task.done else None
-            thread.tasks = ordered
             write_thread(self.base, thread)
             state = "done" if task.done else "pending"
             self._record(f"Mark task {state} in {thread.rel_path}: {task.title}")
             return thread
 
     def complete_task_by_title(self, rel_path: str, title: str) -> bool:
-        """Mark the best-matching pending task as done. Returns success."""
+        """Mark the best-matching pending task (at any depth) as done."""
         with self._lock:
             thread = self.get(rel_path)
-            match = _best_match(title, [t for t in thread.tasks if not t.done])
+            pending = _all_pending(thread.tasks)
+            match = _best_match(title, pending)
             if match is None:
                 return False
             match.done = True
@@ -252,6 +288,38 @@ def _clean_rel(rel_path: str) -> str:
     if any(p == ".." for p in parts):
         raise VaultError(f"Illegal path: {rel_path}")
     return "/".join(parts)
+
+
+def _resolve_task(tasks: list[Task], path: list[int]) -> Task:
+    """Return the task addressed by ``path`` in the ordered task tree.
+
+    Each index selects into the completed-first ordering of the current level,
+    matching exactly what the UI renders and sends back.
+
+    Raises:
+        VaultError: If the path is empty or points outside the tree.
+    """
+    if not path:
+        raise VaultError("Empty task path")
+    level = order_tasks(tasks)
+    task: Task | None = None
+    for depth, index in enumerate(path):
+        if not 0 <= index < len(level):
+            raise VaultError(f"Task path out of range: {path}")
+        task = level[index]
+        level = order_tasks(task.children)
+    assert task is not None  # non-empty path guarantees assignment
+    return task
+
+
+def _all_pending(tasks: list[Task]) -> list[Task]:
+    """Flatten every not-done task in a subtree (pre-order)."""
+    out: list[Task] = []
+    for task in tasks:
+        if not task.done:
+            out.append(task)
+        out.extend(_all_pending(task.children))
+    return out
 
 
 def _best_match(title: str, tasks: list[Task]) -> Task | None:

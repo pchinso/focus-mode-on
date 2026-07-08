@@ -15,6 +15,8 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("APP_PASSWORD", "test-pass")
     monkeypatch.setenv("APP_SECRET_KEY", "test-secret-key")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    # Do not let a developer's local .env leak into tests.
+    monkeypatch.setattr("app.config._load_dotenv", lambda: None)
     import app.main as main
 
     importlib.reload(main)
@@ -100,6 +102,36 @@ def test_command_creates_thread_and_task(client):
     # Toggle it done.
     resp = client.post("/thread/work/alpha/toggle/0")
     assert "✓" in resp.text
+
+
+def test_nested_subtasks_over_http(client):
+    login(client)
+    client.post(
+        "/command",
+        data={
+            "text": "start a new work project called Nested",
+            "confirm": "create_thread:work:Nested",
+        },
+    )
+    # Add a top-level task.
+    client.post("/thread/work/nested/task", data={"title": "Parent"})
+    # Add a subtask under it (parent index-path "0").
+    resp = client.post(
+        "/thread/work/nested/task", data={"title": "Child", "parent": "0"}
+    )
+    assert "Parent" in resp.text and "Child" in resp.text
+    # The rendered tree carries the nested toggle path for the child.
+    assert "/toggle/0.0" in resp.text
+    # Toggle the nested child done via its dotted path.
+    resp = client.post("/thread/work/nested/toggle/0.0")
+    assert resp.status_code == 200
+    assert "✓" in resp.text
+
+    # The full thread page (which includes the recursive macro) renders.
+    page = client.get("/thread/work/nested")
+    assert page.status_code == 200
+    assert "Parent" in page.text and "Child" in page.text
+    assert "data-toggle-collapse" in page.text  # collapse caret present
 
 
 def test_complete_and_restore_flow(client):

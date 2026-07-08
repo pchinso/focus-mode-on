@@ -82,14 +82,65 @@ def test_slug_collision_is_deduped(repo):
 def test_toggle_task_marks_done_with_date(repo):
     repo.create_thread("work", "Toggle")
     repo.add_task("work/toggle", "do it")
-    thread = repo.toggle_task("work/toggle", 0)
+    thread = repo.toggle_task("work/toggle", [0])
     task = thread.sorted_tasks()[0]
     assert task.done is True
     assert task.completed == FIXED
     # Toggling back clears completion.
-    thread = repo.toggle_task("work/toggle", 0)
+    thread = repo.toggle_task("work/toggle", [0])
     assert thread.sorted_tasks()[0].done is False
     assert thread.sorted_tasks()[0].completed is None
+
+
+def test_nested_subtasks_add_and_persist(repo, tmp_path):
+    repo.create_thread("work", "Nest")
+    repo.add_task("work/nest", "Parent")
+    # Add a child under the first (only) top-level task.
+    repo.add_task("work/nest", "Child", parent_path=[0])
+    # Add a grandchild under that child.
+    repo.add_task("work/nest", "Grandchild", parent_path=[0, 0])
+    thread = repo.get("work/nest")
+    parent = thread.ordered_tasks()[0]
+    assert parent.title == "Parent"
+    assert parent.children[0].title == "Child"
+    assert parent.children[0].children[0].title == "Grandchild"
+    # Pending count is recursive: parent + child + grandchild.
+    assert thread.pending_count == 3
+    # It survives a reload from disk (indentation round-trips).
+    reloaded = repo.get("work/nest")
+    gc = reloaded.ordered_tasks()[0].children[0].children[0]
+    assert gc.title == "Grandchild"
+
+
+def test_toggle_nested_task_by_path(repo):
+    repo.create_thread("work", "Deep")
+    repo.add_task("work/deep", "A")
+    repo.add_task("work/deep", "A1", parent_path=[0])
+    # Complete the nested child A1 at path [0, 0].
+    thread = repo.toggle_task("work/deep", [0, 0])
+    child = thread.ordered_tasks()[0].children[0]
+    assert child.done is True
+    assert child.completed == FIXED
+    assert thread.pending_count == 1  # only the parent A remains pending
+
+
+def test_render_indents_nested_tasks():
+    thread = Thread(title="I", rel_path="work/i", created=FIXED)
+    parent = Task("Parent", done=False)
+    parent.children.append(Task("Child", done=False))
+    thread.tasks.append(parent)
+    text = render_thread(thread)
+    assert "- [ ] Parent" in text
+    assert "  - [ ] Child" in text  # two-space indent for the child
+
+
+def test_complete_task_by_title_matches_nested(repo):
+    repo.create_thread("work", "Find")
+    repo.add_task("work/find", "Top")
+    repo.add_task("work/find", "Call the supplier about the quote", parent_path=[0])
+    assert repo.complete_task_by_title("work/find", "supplier quote") is True
+    thread = repo.get("work/find")
+    assert thread.ordered_tasks()[0].children[0].done is True
 
 
 def test_complete_and_restore_thread(repo, tmp_path):

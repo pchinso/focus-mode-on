@@ -1,23 +1,89 @@
-{# Task list partial. Completed tasks appear above pending ones. #}
-{% set ordered = thread.sorted_tasks() %}
-{% if ordered %}
-<ul class="tasks">
-  {% for task in ordered %}
-  <li
-    class="task {{ 'done' if task.done else '' }}"
+{# Recursive task tree partial. Completed tasks appear above pending ones at
+   every level; each task may nest subtasks without limit. #}
+
+{% macro task_node(thread_rel, task, path, depth) %}
+<li class="task-item">
+  <div
+    class="task-row {{ 'done' if task.done else '' }}"
     data-nav="task"
-    data-post="/thread/{{ thread.rel_path }}/toggle/{{ loop.index0 }}"
-    data-swap="#task-list"
     tabindex="0"
-    role="checkbox"
-    aria-checked="{{ 'true' if task.done else 'false' }}"
+    style="padding-left: {{ 0.25 + depth * 1.25 }}rem"
   >
-    <span class="box">{{ '✓' if task.done else '' }}</span>
-    <span class="label">{{ task.title }}</span>
+    {% if task.has_children %}
+    <button
+      class="caret"
+      type="button"
+      data-toggle-collapse
+      aria-label="Collapse or expand subtasks"
+      title="Collapse / expand (← / →)"
+    >▾</button>
+    {% else %}
+    <span class="caret-spacer" aria-hidden="true"></span>
+    {% endif %}
+
+    <button
+      class="task-toggle"
+      type="button"
+      data-post="/thread/{{ thread_rel }}/toggle/{{ path }}"
+      data-swap="#task-list"
+      aria-pressed="{{ 'true' if task.done else 'false' }}"
+    >
+      <span class="box">{{ '✓' if task.done else '' }}</span>
+      <span class="label">{{ task.title }}</span>
+    </button>
+
     {% if task.done and task.completed %}
     <span class="date">{{ task.completed.isoformat() }}</span>
     {% endif %}
-  </li>
+
+    {% set child_count = task.children | length %}
+    {% if child_count %}
+    <span class="pill subtle" title="subtasks">{{ child_count }}</span>
+    {% endif %}
+
+    <button
+      class="add-sub"
+      type="button"
+      data-add-sub
+      aria-label="Add subtask"
+      title="Add subtask"
+    >＋</button>
+  </div>
+
+  <form
+    class="subtask-form"
+    action="/thread/{{ thread_rel }}/task"
+    method="post"
+    data-swap="#task-list"
+    data-reset
+    hidden
+    style="padding-left: {{ 1.5 + depth * 1.25 }}rem"
+  >
+    <input type="hidden" name="parent" value="{{ path }}" />
+    <input
+      type="text"
+      name="title"
+      placeholder="New subtask…"
+      autocomplete="off"
+    />
+    <button class="btn" type="submit">Add</button>
+  </form>
+
+  {% if task.has_children %}
+  <ul class="subtasks">
+    {% for child in task.ordered_children() %}
+    {{ task_node(thread_rel, child, path ~ '.' ~ loop.index0, depth + 1) }}
+    {% endfor %}
+  </ul>
+  {% endif %}
+</li>
+{% endmacro %}
+
+{% set ordered = thread.ordered_tasks() %}
+{% if ordered %}
+<ul class="tasks tree">
+  {% for task in ordered %}
+  {{ task_node(thread.rel_path, task, loop.index0 | string, 0) }}
   {% endfor %}
 </ul>
 {% else %}

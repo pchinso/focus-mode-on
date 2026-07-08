@@ -11,8 +11,11 @@ import frontmatter
 from .model import THREAD_FILE, Task, Thread
 
 
-# Matches a task line: "- [x] Title ✅ 2026-07-08" or "- [ ] Title".
-_TASK_RE = re.compile(r"^\s*-\s*\[(?P<mark>[ xX])\]\s*(?P<body>.+?)\s*$")
+# Matches a (possibly indented) task line, capturing its indentation so nested
+# subtasks can be reconstructed: "  - [x] Title ✅ 2026-07-08".
+_TASK_RE = re.compile(
+    r"^(?P<indent>[ \t]*)[-*]\s*\[(?P<mark>[ xX])\]\s*(?P<body>.+?)\s*$"
+)
 # Trailing completion stamp appended to done tasks, e.g. "✅ 2026-07-08".
 _DONE_STAMP_RE = re.compile(r"\s*✅\s*(?P<d>\d{4}-\d{2}-\d{2})\s*$")
 
@@ -32,17 +35,23 @@ def _parse_date(value: object) -> date | None:
 
 
 def _split_body(body: str) -> tuple[str, list[Task]]:
-    """Split a thread body into its description and its task list.
+    """Split a thread body into its description and its nested task tree.
+
+    Task lines under the ``## Tasks`` heading are assembled into a tree using
+    their indentation: a line indented more than the previous one becomes its
+    child, supporting unlimited nesting depth.
 
     Args:
         body: Markdown body below the frontmatter.
 
     Returns:
-        A tuple of (description text, parsed tasks).
+        A tuple of (description text, top-level tasks with children filled).
     """
     lines = body.splitlines()
     desc_lines: list[str] = []
     tasks: list[Task] = []
+    # Stack of (indent_width, task) tracking the current ancestry chain.
+    stack: list[tuple[int, Task]] = []
     in_tasks = False
     for line in lines:
         stripped = line.strip()
@@ -50,9 +59,19 @@ def _split_body(body: str) -> tuple[str, list[Task]]:
             in_tasks = True
             continue
         if in_tasks:
-            m = _TASK_RE.match(line)
-            if m:
-                tasks.append(_parse_task(m))
+            match = _TASK_RE.match(line)
+            if not match:
+                continue
+            indent = _indent_width(match.group("indent"))
+            task = _parse_task(match)
+            # Pop ancestors that are at the same or deeper indentation.
+            while stack and stack[-1][0] >= indent:
+                stack.pop()
+            if stack:
+                stack[-1][1].children.append(task)
+            else:
+                tasks.append(task)
+            stack.append((indent, task))
             continue
         # Skip a leading "# Title" heading; keep the rest as description.
         if stripped.startswith("# "):
@@ -61,8 +80,13 @@ def _split_body(body: str) -> tuple[str, list[Task]]:
     return "\n".join(desc_lines).strip(), tasks
 
 
+def _indent_width(indent: str) -> int:
+    """Return the visual width of leading whitespace (tabs count as two)."""
+    return sum(2 if ch == "\t" else 1 for ch in indent)
+
+
 def _parse_task(match: re.Match[str]) -> Task:
-    """Build a Task from a regex match of a checklist line."""
+    """Build a Task (without children) from a regex match of a checklist line."""
     done = match.group("mark").lower() == "x"
     body = match.group("body")
     completed: date | None = None

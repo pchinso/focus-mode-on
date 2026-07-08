@@ -26,10 +26,10 @@ FastAPI (app/main.py)
 | `app/config.py` | Read settings from environment variables |
 | `app/auth.py` | Password check, signed session cookies, rate limiting |
 | `app/main.py` | Routes, request handling, intent application |
-| `app/vault/model.py` | `Thread` / `Task` dataclasses, slugify |
-| `app/vault/parser.py` | Markdown + frontmatter → model |
-| `app/vault/writer.py` | Model → canonical, lint-clean Markdown (atomic write) |
-| `app/vault/repo.py` | High-level operations, write lock, git recording |
+| `app/vault/model.py` | `Thread` / `Task` (recursive tree) dataclasses, `order_tasks`, `count_pending`, slugify |
+| `app/vault/parser.py` | Markdown + frontmatter → model; nested checklist → task tree |
+| `app/vault/writer.py` | Model → canonical, lint-clean Markdown with nested indentation (atomic write) |
+| `app/vault/repo.py` | High-level operations (add/toggle by index-path, subtasks), write lock, git recording |
 | `app/vault/sync.py` | Best-effort git pull/commit/push (no-op without git) |
 | `app/ai/commands.py` | Natural language → structured intents (OpenAI or heuristic) |
 | `app/ai/icons.py` | Optional per-thread icon image generation |
@@ -48,15 +48,38 @@ FastAPI (app/main.py)
 
 ## Data model
 
+The model is hierarchical at two levels, neither of which has a fixed depth
+limit:
+
+- **Threads** nest via the filesystem: a thread folder can contain child thread
+  folders to any depth. `Thread.children` is filled recursively by
+  `parser.load_tree`.
+- **Tasks** nest via indented Markdown checklists: `Task.children` forms an
+  unbounded tree. `parser._split_body` reconstructs the tree from each line's
+  indentation using an indentation stack; `writer._render_tasks` emits a
+  canonical two-space indent per level.
+
 Each thread is a folder with a `thread.md`: YAML frontmatter (`title`,
 `status`, `created`, `completed`, optional `icon`) plus a body with a `#`
-heading, a description, and a `## Tasks` checklist. Completed tasks carry a
-`✅ YYYY-MM-DD` stamp and are written before pending ones. Archiving moves the
-folder under `_archive/` preserving its relative path; restore reverses it.
+heading, a description, and a nested `## Tasks` checklist. Completed tasks carry
+a `✅ YYYY-MM-DD` stamp and are ordered before pending ones **at every level**
+(`model.order_tasks`). Archiving moves the folder under `_archive/` preserving
+its relative path; restore reverses it.
 
-The parser/writer round-trip is idempotent and markdownlint-clean — this is
-covered by `tests/test_vault.py::test_write_then_parse_round_trip` and
-`test_render_is_lint_clean_and_orders_done_first`.
+### Addressing tasks
+
+Because tasks are a tree and reorder as they complete, the UI and server agree
+on a **dotted index-path** into the completed-first ordered tree: `0` is the
+first top-level task, `0.2` its third child, `0.2.1` that child's second child.
+The renderer emits these paths; `repo._resolve_task` walks them (re-ordering at
+each level) to find the target. Because the client re-fetches the whole task
+partial after each mutation, paths are always recomputed from a fresh render,
+so a reorder never mis-targets a subsequent action. Toggle and add-subtask
+routes parse the path via `main._parse_task_path`.
+
+The parser/writer round-trip is idempotent and markdownlint-clean, including
+nested subtasks — covered by `tests/test_vault.py::test_write_then_parse_round_trip`,
+`test_render_indents_nested_tasks`, and `test_nested_subtasks_add_and_persist`.
 
 ## Build, run, test
 

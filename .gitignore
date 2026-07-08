@@ -11,8 +11,6 @@ dist/
 # Environment / secrets
 .env
 
-# Generated thread icons (regenerated on demand)
-vault/**/icon.png
-
-# Archived threads created at runtime
-vault/_archive/
+# Personal vault — never tracked. The app creates work/ and personal/ on
+# startup; keep your Markdown data local (or in a separate private repo).
+vault/

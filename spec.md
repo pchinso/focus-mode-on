@@ -285,10 +285,14 @@ focus-mode-on/
   which selects the active root. The **default on first entry is WORK**. A
   two-state switch in the header changes the mode; the choice is persisted (a
   cookie, so the server renders the correct root) and survives reload and
-  re-login. The mode also biases the command bar: threads and tasks created
-  from natural language default to the active mode's root unless the note
-  names the other one. The header accent follows the mode (Energy Coral for
-  WORK, Water Turquoise for PERSONAL) per the water/energy rule.
+  re-login. The mode also **scopes the AI command bar to the active root**:
+  the model is shown only the active root's threads and instructed to stay
+  within it, and the server enforces this — new threads are forced into the
+  active root, and any intent targeting the other root is skipped and reported
+  ("Ignored — outside WORK mode"). So in WORK mode the AI can never modify
+  PERSONAL, and vice versa; switch mode to act on the other area. The header
+  accent follows the mode (Energy Coral for WORK, Water Turquoise for
+  PERSONAL) per the water/energy rule.
 - **Dashboard (entry point)**: shows the active mode's root and its active
   thread cards (icon, title, pending count, sub-thread count). A global
   **command bar** (focused with `/`) accepts natural-language input anywhere
@@ -451,6 +455,10 @@ the title; archiving moves the folder under `_archive/` and sets
     expand/collapse, round-trips through the `.md` file as an indented
     checklist, and toggling a deeply nested item marks exactly that item (and
     only it) done both in the UI and on disk.
+13. While in WORK mode, a natural-language command aimed at PERSONAL creates or
+    modifies nothing under `personal/` — a new thread is forced under `work/`
+    and any PERSONAL-targeted operation is skipped and reported; the same holds
+    with the roles reversed in PERSONAL mode.
 
 ---
 

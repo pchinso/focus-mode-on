@@ -118,7 +118,7 @@ class AICommandLayer:
             return InterpretResult(source="heuristic", note="Empty input.")
         if self._client is not None:
             try:
-                return self._interpret_openai(text, tree_paths)
+                return self._interpret_openai(text, tree_paths, default_root)
             except Exception as exc:  # noqa: BLE001 - degrade, never crash the UI
                 fallback = _heuristic(text, tree_paths, default_root)
                 fallback.note = f"AI unavailable ({exc.__class__.__name__}); used heuristic."
@@ -127,9 +127,17 @@ class AICommandLayer:
         result.note = "OpenAI key not configured; used local heuristic."
         return result
 
-    def _interpret_openai(self, text: str, tree_paths: list[str]) -> InterpretResult:
+    def _interpret_openai(
+        self, text: str, tree_paths: list[str], default_root: str
+    ) -> InterpretResult:
         """Call the OpenAI API and parse its structured response."""
-        context = "Known thread paths:\n" + ("\n".join(tree_paths) or "(none yet)")
+        context = (
+            f"Active root: {default_root}. Only create or modify threads and "
+            f"tasks under the '{default_root}' root; never reference any other "
+            f"root. All thread_path values must start with '{default_root}/' "
+            f"(or be exactly '{default_root}').\n\n"
+            "Known thread paths:\n" + ("\n".join(tree_paths) or "(none yet)")
+        )
         response = self._client.chat.completions.create(
             model=self._model,
             messages=[

@@ -283,11 +283,18 @@ async def command(
     request already carries ``confirm`` for a specific intent.
     """
     mode = current_mode(request)
-    paths = _all_paths()
+    # Scope the AI to the active mode: only show it threads from this root, and
+    # only ever act within it. In WORK mode nothing can touch PERSONAL, and
+    # vice versa.
+    paths = [p for p in _all_paths() if _root_of(p) == mode]
     result = ai.interpret(text, paths, default_root=mode)
     applied: list[str] = []
     pending: list[Intent] = []
+    skipped: list[Intent] = []
     for intent in result.intents:
+        if not _intent_in_mode(intent, mode):
+            skipped.append(intent)
+            continue
         if intent.needs_confirmation and confirm != _intent_key(intent):
             pending.append(intent)
             continue
@@ -298,12 +305,32 @@ async def command(
         {
             "applied": [a for a in applied if a],
             "pending": pending,
+            "skipped": skipped,
+            "mode": mode,
             "source": result.source,
             "note": result.note,
             "raw": text,
             "intent_key": _intent_key,
         },
     )
+
+
+def _root_of(path: str) -> str:
+    """Return the top-level root segment of a vault-relative path."""
+    return (path or "").strip().strip("/").split("/", 1)[0]
+
+
+def _intent_in_mode(intent: Intent, mode: str) -> bool:
+    """Whether an intent is allowed in the active mode.
+
+    ``create_thread`` is always allowed because its parent is forced into the
+    active root. Every other action must target a thread already under the
+    active mode's root, so WORK-mode input can never modify PERSONAL (or the
+    reverse).
+    """
+    if intent.action == "create_thread":
+        return True
+    return _root_of(intent.thread_path) == mode
 
 
 def _apply_intent(intent: Intent, mode: str = DEFAULT_MODE) -> str:
@@ -363,7 +390,9 @@ def _resolve_parent(thread_path: str, title: str, mode: str) -> str:
     slug = slugify(title)
     if slug and parent.rsplit("/", 1)[-1] == slug:
         parent = parent.rsplit("/", 1)[0] if "/" in parent else ""
-    if not parent or parent.split("/", 1)[0] not in ROOTS:
+    # Force the new thread into the active mode's root: a missing/invalid
+    # parent, or one under the OTHER root, is redirected to the active mode.
+    if not parent or _root_of(parent) != mode:
         parent = mode
     return parent
 

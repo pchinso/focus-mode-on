@@ -151,6 +151,8 @@ def test_nested_subtasks_over_http(client):
 
 def test_complete_and_restore_flow(client):
     login(client)
+    # Personal work happens in PERSONAL mode (AI is scoped to the active mode).
+    client.post("/mode/personal")
     client.post(
         "/command",
         data={
@@ -166,6 +168,39 @@ def test_complete_and_restore_flow(client):
     assert resp.status_code == 303
     thread = client.get("/thread/personal/beta")
     assert thread.status_code == 200
+
+
+def test_work_mode_ignores_personal_input(client):
+    """In WORK mode, a note aimed at PERSONAL is skipped, not applied."""
+    login(client)  # default mode is WORK
+    resp = client.post("/command", data={"text": "personal buy milk", "confirm": ""})
+    assert resp.status_code == 200
+    assert "Ignored" in resp.text and "WORK" in resp.text
+    # And no personal thread was touched.
+    assert client.get("/thread/personal/personal").status_code == 404
+
+
+def test_work_mode_forces_new_thread_into_work(client):
+    """A 'personal' thread requested in WORK mode is created under work/."""
+    login(client)
+    resp = client.post(
+        "/command",
+        data={
+            "text": "start a new personal project called Zeta",
+            "confirm": "create_thread:personal:Zeta",
+        },
+    )
+    assert "Created thread work/zeta" in resp.text
+
+
+def test_intent_in_mode_helper():
+    import app.main as main
+    from app.ai.commands import Intent
+
+    assert main._intent_in_mode(Intent("create_task", "work/x", "t"), "work") is True
+    assert main._intent_in_mode(Intent("create_task", "personal/x", "t"), "work") is False
+    # create_thread is always allowed (its parent is forced into the mode).
+    assert main._intent_in_mode(Intent("create_thread", "personal", "t"), "work") is True
 
 
 def test_health_reports_ai_disabled(client):

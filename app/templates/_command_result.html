@@ -37,7 +37,19 @@
   {% endfor %}
   {% endif %}
 
-  {% if not applied and not pending %}
+  {% if skipped %}
+  <p class="source">
+    Ignored — outside <strong>{{ (mode or 'work') | upper }}</strong> mode
+    (switch mode with <kbd>m</kbd> to act on the other area):
+  </p>
+  <ul>
+    {% for intent in skipped %}
+    <li>{{ intent.action.replace('_', ' ') }} — <em>{{ intent.title or intent.thread_path }}</em></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if not applied and not pending and not skipped %}
   <p class="empty">Nothing to do from “{{ raw }}”.</p>
   {% endif %}
 </div>

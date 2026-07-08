@@ -9,6 +9,13 @@ See [spec.md](spec.md) for the full product and architecture specification.
 
 ## Quick start
 
+On Windows, once dependencies are installed, just **double-click `run.bat`** —
+it starts the server and opens <http://127.0.0.1:8000> in your browser. Log in
+with the password from your `.env` file. Close the window (or press Ctrl+C) to
+stop.
+
+To install and run manually:
+
 ```bash
 python -m venv .venv
 .venv\Scripts\activate        # Windows

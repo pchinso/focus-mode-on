@@ -40,6 +40,9 @@
 - **Move** a thread under a different parent (re-parent), updating the folder
   path and breadcrumb.
 - **Delete** with an undo toast (soft-delete into `_archive/` like completion).
+- **Task age**: each task records its creation date with an Obsidian-compatible
+  `➕ YYYY-MM-DD` stamp; the UI shows how old a pending task is (e.g. "5d") so
+  stale pending items are easy to find, and old ones are visually emphasized.
 
 ### 2.3 AI review queue improvements
 

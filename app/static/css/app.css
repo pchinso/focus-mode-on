@@ -37,6 +37,19 @@ a:hover {
   font-size: 1.15rem;
   letter-spacing: 0.01em;
   color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-logo {
+  flex: 0 0 auto;
+}
+
+.login-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .app-header .brand:hover {

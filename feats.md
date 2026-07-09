@@ -7,4 +7,5 @@
 - [X] bug:Also seems that ai input box is unreachable by keyboard.
 - [X] feat:provide in input box some tips of commans templates, this tips disapear when user start typing
 - [X] feat:  help button with a list of inputs examples that provide actions.
-- [ ] review: new specs_v11.md for
+- [X] review: create a new specs_v11.md file with features an better UI.
+- [X] feat:  for  upper left home shorcut where the name of app are in text,  create a icon for the app not only text.

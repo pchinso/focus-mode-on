@@ -12,13 +12,21 @@
         } catch (e) {}
       })();
     </script>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
     <link rel="stylesheet" href="/static/css/tokens.css" />
     <link rel="stylesheet" href="/static/css/app.css" />
   </head>
   <body>
     <div class="login-wrap">
       <form class="login-card" action="/login" method="post">
-        <h1>◆ Focus Mode On</h1>
+        <h1 class="login-brand">
+          <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true" focusable="false">
+            <circle cx="16" cy="16" r="12" fill="none" stroke="var(--planet-blue)" stroke-width="2.6" />
+            <circle cx="16" cy="16" r="6.5" fill="none" stroke="var(--water-turquoise)" stroke-width="2.6" />
+            <circle cx="16" cy="16" r="2.6" fill="var(--energy-coral)" />
+          </svg>
+          Focus Mode On
+        </h1>
         <p class="tag">Personal task management</p>
         {% if error %}
         <p class="login-error">{{ error }}</p>

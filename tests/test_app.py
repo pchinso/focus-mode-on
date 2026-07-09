@@ -255,6 +255,17 @@ def test_intent_in_mode_helper():
     assert main._intent_in_mode(Intent("create_thread", "personal", "t"), "work") is True
 
 
+def test_app_has_logo_and_favicon(client):
+    """The header shows a vector logo mark and the favicon is served."""
+    login(client)
+    page = client.get("/").text
+    assert "brand-logo" in page  # inline SVG logo in the header
+    assert "favicon.svg" in page  # tab icon linked
+    fav = client.get("/static/favicon.svg")
+    assert fav.status_code == 200
+    assert "svg" in fav.headers["content-type"]
+
+
 def test_health_reports_ai_disabled(client):
     resp = client.get("/health")
     assert resp.status_code == 200

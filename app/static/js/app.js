@@ -250,6 +250,14 @@
     }
   });
 
+  // Enable the Move (re-parent) button only once a destination is chosen.
+  document.addEventListener("change", (ev) => {
+    if (!ev.target.classList || !ev.target.classList.contains("move-select")) return;
+    const form = ev.target.closest("form");
+    const btn = form && form.querySelector("[data-move-btn]");
+    if (btn) btn.disabled = !ev.target.value;
+  });
+
   /* ---- Dashboard search / filter ---- */
   document.addEventListener("input", (ev) => {
     if (!ev.target || ev.target.id !== "dashboard-search") return;

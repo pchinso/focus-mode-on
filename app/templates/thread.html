@@ -32,6 +32,16 @@
         ↻ Icon
       </button>
     </form>
+    <form action="/new-thread/{{ thread.rel_path }}" method="post" class="new-sub-form">
+      <input
+        type="text"
+        name="title"
+        placeholder="New sub-thread…"
+        autocomplete="off"
+        aria-label="New sub-thread name"
+      />
+      <button class="btn secondary" type="submit">＋ Sub-thread</button>
+    </form>
     {% if move_targets %}
     <form action="/move-thread/{{ thread.rel_path }}" method="post" class="move-form">
       <select name="new_parent" class="move-select" aria-label="Move thread under">
@@ -40,7 +50,7 @@
         <option value="{{ p }}">{{ p }}</option>
         {% endfor %}
       </select>
-      <button class="btn secondary" type="submit">Move</button>
+      <button class="btn secondary" type="submit" data-move-btn disabled>Move</button>
     </form>
     {% endif %}
     <form action="/complete/{{ thread.rel_path }}" method="post">

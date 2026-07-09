@@ -807,6 +807,33 @@ main {
   font-size: 0.9rem;
 }
 
+#command-area {
+  margin-bottom: 1.25rem;
+}
+
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* New sub-thread control. */
+.new-sub-form {
+  display: inline-flex;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.new-sub-form input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.85rem;
+  max-width: 150px;
+}
+
 /* Re-parent control. */
 .move-form {
   display: inline-flex;

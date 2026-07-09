@@ -148,6 +148,43 @@ def test_nested_subtasks_over_http(client):
     assert "data-toggle-collapse" in page.text  # collapse caret present
 
 
+def test_command_bar_on_every_page(client):
+    """v1.1: the AI command box is present on the dashboard AND thread pages."""
+    login(client)
+    approve(client, "create_thread", "work", "Anywhere")
+    dash = client.get("/").text
+    thread = client.get("/thread/work/anywhere").text
+    assert 'id="command-input"' in dash
+    assert 'id="command-input"' in thread  # available while viewing a thread
+
+
+def test_new_subthread_button_creates_child(client):
+    """v1.1: the thread page can create a sub-thread directly."""
+    login(client)
+    approve(client, "create_thread", "work", "Parent")
+    page = client.get("/thread/work/parent").text
+    assert "new-thread/work/parent" in page  # the sub-thread form
+    resp = client.post(
+        "/new-thread/work/parent", data={"title": "Child"}, follow_redirects=False
+    )
+    assert resp.status_code == 303
+    assert resp.headers["location"] == "/thread/work/parent/child"
+    assert client.get("/thread/work/parent/child").status_code == 200
+
+
+def test_move_button_disabled_until_selected(client):
+    """v1.1: the Move button starts disabled (needs a destination)."""
+    login(client)
+    approve(client, "create_thread", "work", "A")
+    approve(client, "create_thread", "work", "B")
+    page = client.get("/thread/work/b").text
+    # The move button renders with a disabled attribute and a hook for JS.
+    assert "data-move-btn" in page
+    import re as _re
+    m = _re.search(r"<button[^>]*data-move-btn[^>]*>", page)
+    assert m and "disabled" in m.group(0)
+
+
 def test_pending_task_shows_age(client):
     """A pending task displays its age based on creation time."""
     login(client)

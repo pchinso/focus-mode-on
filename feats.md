@@ -17,3 +17,6 @@
 - [X] git action: new branch v1.1
 - [X] feat: in branch v1.1 implement specs_v11.md features (done: Approve/Discard all, dashboard search, command palette Ctrl+K, rename task, delete task, responsive layout, HTML report export, regenerate icon, task reorder up/down, per-thread accent color, thread re-parent, edit-before-approve, archive undo toast)
 - [X] feat : include how old are a task based on date of creation, this allows to find old task pendings.  example: Task 1(2h ago),  task 2(7 days ago)...
+- [X] feat: a button inside Thread page to create a new one under this.
+- [X] bug: button move allows click with any destination selected,  disable if any destination is selected.
+- [X] feat: AI input text box allways visible, also under a thread page revision, ready to accept inputs.

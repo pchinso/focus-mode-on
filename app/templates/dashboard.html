@@ -9,58 +9,6 @@
 </div>
 {% endif %}
 
-<form
-  class="command-bar"
-  action="/command"
-  method="post"
-  data-swap="#command-result"
-  data-reset
-  data-refocus="#command-input"
-  data-loading="Thinking… interpreting your note"
->
-  <textarea
-    id="command-input"
-    name="text"
-    rows="10"
-    autofocus
-    placeholder="{% if ai_available %}Type naturally, multiple lines welcome — Ctrl+Enter to run. Press / to focus, Esc to leave.{% else %}Command bar (heuristic mode — no AI key set). Ctrl+Enter to run.{% endif %}"
-    autocomplete="off"
-  ></textarea>
-  <div class="command-side">
-    <button class="btn" type="submit">Run</button>
-    <button
-      class="btn secondary"
-      type="button"
-      id="examples-toggle"
-      aria-controls="command-tips"
-    >Examples</button>
-  </div>
-</form>
-
-<div id="command-tips" class="command-tips">
-  <span class="tips-label">Try (click to use) · <kbd>/</kbd> focuses the box:</span>
-  <ul>
-    <li>
-      <button type="button" class="tip" data-template="new thread NAME">new thread NAME</button>
-      — create a Level-1 thread
-    </li>
-    <li>
-      <button type="button" class="tip" data-template="create threads BESS, PV">create threads BESS, PV</button>
-      — several at once
-    </li>
-    <li>
-      <button type="button" class="tip" data-template="add TASK to THREAD">add TASK to THREAD</button>
-      — add a task
-    </li>
-    <li>
-      <button type="button" class="tip" data-template="finished TASK in THREAD">finished TASK in THREAD</button>
-      — complete a task
-    </li>
-  </ul>
-</div>
-
-<div id="command-result"></div>
-
 {% if active %}
 <section class="root-section">
   <div class="root-title {{ active.rel_path }}">

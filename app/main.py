@@ -48,6 +48,8 @@ repo = VaultRepo(settings.vault_dir)
 auth = Auth(settings.password, settings.secret_key)
 ai = AICommandLayer(settings.openai_key)
 icons = IconGenerator(settings.openai_key)
+# Available everywhere now that the command bar lives in the base layout.
+templates.env.globals["ai_available"] = ai.available
 
 
 # -- auth plumbing ---------------------------------------------------------
@@ -334,6 +336,22 @@ async def restore_thread(rel_path: str) -> Response:
     except VaultError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return RedirectResponse("/archive", status_code=303)
+
+
+@app.post("/new-thread/{rel_path:path}", dependencies=[Depends(require_login)])
+async def new_subthread(
+    rel_path: str, background: BackgroundTasks, title: str = Form(...)
+) -> Response:
+    """Create a child thread directly under ``rel_path`` (manual, no AI)."""
+    if not title.strip():
+        return RedirectResponse(f"/thread/{rel_path}", status_code=303)
+    try:
+        thread = repo.create_thread(rel_path, title)
+    except VaultError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    if icons.available:
+        background.add_task(_maybe_icon, thread.rel_path, thread.title)
+    return RedirectResponse(f"/thread/{thread.rel_path}", status_code=303)
 
 
 @app.post("/move-thread/{rel_path:path}", dependencies=[Depends(require_login)])

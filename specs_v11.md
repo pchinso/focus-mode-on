@@ -76,6 +76,13 @@
   child thread under the current one (a manual create, no AI round-trip).
 - **Guarded Move control**: the thread "Move to…" re-parent button stays
   disabled until a real destination is chosen, so it can't submit an empty move.
+- **Pending-tasks peek on cards**: each thread card has a `＋` button that
+  expands a panel of that thread's pending tasks (including nested sub-threads),
+  ordered oldest-first by creation date so stale work surfaces; each item links
+  to the thread it belongs to.
+- **Icon legibility in dark mode**: generated thread icons render on a constant
+  light chip (contained, padded) so images with transparent or dark content
+  stay visible in both light and dark themes.
 - **Denser, calmer dashboard**: consistent card sizing, clearer section
   headers, subtle hover/selection motion (respecting reduced-motion).
 - **Sticky command bar** that collapses to a single line on scroll and expands

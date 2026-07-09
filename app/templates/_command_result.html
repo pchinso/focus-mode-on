@@ -1,46 +1,56 @@
-{# Result of a command-bar interpretation. #}
-<div class="result"{% if applied %} data-applied="1"{% endif %}>
-  {% if applied %}
-  <p class="source refreshing">Applied — refreshing the view…</p>
-  {% endif %}
+{# Review queue of actions identified from the note. Nothing is applied until
+   the user approves. Each action can be discarded; "Approve remaining" applies
+   whatever is left in the queue. #}
+<div class="result">
   {% if note %}<p class="source">{{ note }}</p>{% endif %}
 
-  {% if applied %}
-  <strong>Done</strong>
-  <ul>
-    {% for line in applied %}
-    <li>{{ line }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  {% if pending %}
-  <strong>Confirm these low-confidence actions</strong>
-  {% for intent in pending %}
-  <div class="confirm-row">
-    <span>
-      {{ intent.action.replace('_', ' ') }} —
-      <em>{{ intent.title or intent.thread_path }}</em>
-      <span class="source">({{ '%.0f' | format(intent.confidence * 100) }}%)</span>
-    </span>
-    <button
-      class="btn secondary"
-      type="button"
-      data-post="/command"
-      data-swap="#command-result"
-      data-loading="Applying…"
-      data-fields="text={{ raw | urlencode }}&confirm={{ intent_key(intent) | urlencode }}"
-    >
-      Apply
-    </button>
-  </div>
-  {% endfor %}
+  {% if queue %}
+  <strong>Review actions ({{ queue | length }}) — approve or discard</strong>
+  <form
+    action="/apply"
+    method="post"
+    data-swap="#command-result"
+    data-loading="Applying approved actions…"
+  >
+    <ul class="identified" id="action-queue">
+      {% for intent in queue %}
+      <li data-queue-item>
+        <input type="hidden" name="action" value="{{ intent.action }}" />
+        <input type="hidden" name="thread_path" value="{{ intent.thread_path }}" />
+        <input type="hidden" name="title" value="{{ intent.title }}" />
+        <span class="action-tag">{{ intent.action.replace('_', ' ') }}</span>
+        <em>{{ intent.title or intent.thread_path or '—' }}</em>
+        {% if intent.thread_path and intent.title %}
+        <span class="source">in {{ intent.thread_path }}</span>
+        {% endif %}
+        <span class="source">({{ '%.0f' | format(intent.confidence * 100) }}%)</span>
+        <span class="queue-buttons">
+          <button
+            type="button"
+            class="btn secondary discard"
+            data-discard
+            aria-label="Discard this action"
+          >Discard</button>
+          <button
+            type="button"
+            class="btn approve"
+            data-approve
+            aria-label="Approve this action"
+          >OK</button>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="queue-actions">
+      <button class="btn" type="submit">Approve remaining</button>
+    </div>
+  </form>
   {% endif %}
 
   {% if skipped %}
   <p class="source">
     Ignored — outside <strong>{{ (mode or 'work') | upper }}</strong> mode
-    (switch mode with <kbd>m</kbd> to act on the other area):
+    (switch with <kbd>m</kbd>):
   </p>
   <ul>
     {% for intent in skipped %}
@@ -49,7 +59,7 @@
   </ul>
   {% endif %}
 
-  {% if not applied and not pending and not skipped %}
+  {% if not queue and not skipped %}
   <p class="empty">Nothing to do from “{{ raw }}”.</p>
   {% endif %}
 </div>

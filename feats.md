@@ -1,0 +1,2 @@
+- [x] Increase text input box to allow multiple lines, 10 lines.
+- [x] Input text field for AI must be ingested and provide a list of identified actions under text box not directly make changes in vault like create a new thread, mark a task as complete... Indentified action must be placed in a Queque of actions pending aprobation or discard by user.  Example: promtpt(create main theads, BESS, PV) ->  Action1:  Create Level1 thread[BESS] [Discard][OK],  Action2:  Create Level1 thread[PV][Discard][OK]

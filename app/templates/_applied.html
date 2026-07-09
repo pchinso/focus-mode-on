@@ -1,0 +1,14 @@
+{# Shown after the user approves actions from the review queue. #}
+<div class="result"{% if applied %} data-applied="1"{% endif %}>
+  {% if applied %}
+  <p class="source refreshing">Approved — refreshing the view…</p>
+  <strong>Applied</strong>
+  <ul>
+    {% for line in applied %}
+    <li>{{ line }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty">Nothing to apply.</p>
+  {% endif %}
+</div>

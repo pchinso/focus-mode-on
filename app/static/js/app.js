@@ -125,6 +125,71 @@
     }
   });
 
+  // After a queue row is resolved, remove it; if the queue is now empty,
+  // refresh the page (approved) or show a note (all discarded).
+  function resolveQueueRow(item, approvedAny) {
+    const queue = item.closest("#action-queue");
+    item.remove();
+    if (queue && !queue.querySelector("[data-queue-item]")) {
+      if (approvedAny) {
+        window.location.reload();
+      } else {
+        const form = queue.closest("form");
+        if (form) form.outerHTML = '<p class="empty">All actions discarded.</p>';
+      }
+    }
+  }
+
+  // Delegated handler: discard one action from the review queue.
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("[data-discard]");
+    if (!btn) return;
+    ev.preventDefault();
+    const item = btn.closest("[data-queue-item]");
+    if (item) resolveQueueRow(item, false);
+  });
+
+  // Delegated handler: approve (OK) one action from the review queue.
+  document.addEventListener("click", async (ev) => {
+    const btn = ev.target.closest("[data-approve]");
+    if (!btn) return;
+    ev.preventDefault();
+    const item = btn.closest("[data-queue-item]");
+    if (!item) return;
+    const val = (n) => {
+      const el = item.querySelector("input[name='" + n + "']");
+      return el ? el.value : "";
+    };
+    const body = new URLSearchParams();
+    body.append("action", val("action"));
+    body.append("thread_path", val("thread_path"));
+    body.append("title", val("title"));
+    btn.disabled = true;
+    btn.textContent = "…";
+    try {
+      await fetch("/apply", {
+        method: "POST",
+        body: body,
+        headers: { "X-Requested-With": "fetch" },
+      });
+    } catch (e) {
+      /* ignore — the row is still removed; user can retry via Run */
+    }
+    resolveQueueRow(item, true);
+  });
+
+  // Ctrl/Cmd+Enter submits the multi-line command box (plain Enter = newline).
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Enter" || !(ev.ctrlKey || ev.metaKey)) return;
+    const ta = ev.target.closest("textarea[name='text']");
+    if (!ta) return;
+    const form = ta.closest("form[data-swap]");
+    if (form) {
+      ev.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
   // Delegated handler for elements that post on click (task toggles, confirms).
   document.addEventListener("click", async (ev) => {
     const el = ev.target.closest("[data-post]");

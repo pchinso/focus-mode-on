@@ -18,13 +18,13 @@
   data-refocus="#command-input"
   data-loading="Thinking… interpreting your note{% if ai_available %} and generating any new icon{% endif %}"
 >
-  <input
-    type="text"
+  <textarea
     id="command-input"
     name="text"
-    placeholder="{% if ai_available %}Type naturally: “finished the supplier call in project y”{% else %}Command bar (heuristic mode — no AI key set){% endif %}"
+    rows="10"
+    placeholder="{% if ai_available %}Type naturally, multiple lines welcome: “finished the supplier call in project y; add a follow-up for Friday”{% else %}Command bar (heuristic mode — no AI key set){% endif %}&#10;&#10;Ctrl+Enter to run"
     autocomplete="off"
-  />
+  ></textarea>
   <button class="btn" type="submit">Run</button>
 </form>
 

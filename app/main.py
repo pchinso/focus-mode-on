@@ -274,44 +274,60 @@ async def restore_thread(rel_path: str) -> Response:
 @app.post(
     "/command", response_class=HTMLResponse, dependencies=[Depends(require_login)]
 )
-async def command(
-    request: Request, text: str = Form(""), confirm: str = Form("")
-) -> Response:
-    """Interpret a natural-language note and apply high-confidence intents.
+async def command(request: Request, text: str = Form("")) -> Response:
+    """Ingest a note and return a review queue of identified actions.
 
-    Low-confidence intents are returned for one-click confirmation unless the
-    request already carries ``confirm`` for a specific intent.
+    Nothing is applied here: in-mode intents are placed in a queue the user
+    approves or discards; out-of-mode intents are reported as ignored. The AI
+    is scoped to the active mode (WORK/PERSONAL) both in context and here.
     """
     mode = current_mode(request)
-    # Scope the AI to the active mode: only show it threads from this root, and
-    # only ever act within it. In WORK mode nothing can touch PERSONAL, and
-    # vice versa.
     paths = [p for p in _all_paths() if _root_of(p) == mode]
     result = ai.interpret(text, paths, default_root=mode)
-    applied: list[str] = []
-    pending: list[Intent] = []
+    queue: list[Intent] = []
     skipped: list[Intent] = []
     for intent in result.intents:
-        if not _intent_in_mode(intent, mode):
-            skipped.append(intent)
-            continue
-        if intent.needs_confirmation and confirm != _intent_key(intent):
-            pending.append(intent)
-            continue
-        applied.append(_apply_intent(intent, mode))
+        (queue if _intent_in_mode(intent, mode) else skipped).append(intent)
     return templates.TemplateResponse(
         request,
         "_command_result.html",
         {
-            "applied": [a for a in applied if a],
-            "pending": pending,
+            "queue": queue,
             "skipped": skipped,
             "mode": mode,
             "source": result.source,
             "note": result.note,
             "raw": text,
-            "intent_key": _intent_key,
         },
+    )
+
+
+@app.post(
+    "/apply", response_class=HTMLResponse, dependencies=[Depends(require_login)]
+)
+async def apply_actions(
+    request: Request,
+    action: list[str] = Form(default=[]),
+    thread_path: list[str] = Form(default=[]),
+    title: list[str] = Form(default=[]),
+) -> Response:
+    """Apply the actions the user approved from the review queue.
+
+    Receives parallel arrays (one entry per still-queued action). Each is
+    re-checked against the active mode before applying, so a tampered target in
+    the other root is ignored.
+    """
+    mode = current_mode(request)
+    applied: list[str] = []
+    for act, path, ttl in zip(action, thread_path, title):
+        intent = Intent(action=act, thread_path=path, title=ttl, confidence=1.0)
+        if not _intent_in_mode(intent, mode):
+            continue
+        line = _apply_intent(intent, mode)
+        if line:
+            applied.append(line)
+    return templates.TemplateResponse(
+        request, "_applied.html", {"applied": applied}
     )
 
 

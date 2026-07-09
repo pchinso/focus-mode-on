@@ -83,31 +83,36 @@ def test_mode_switch_persists(client):
 def test_command_defaults_thread_to_active_mode(client):
     login(client)
     client.post("/mode/personal")
-    # A note that names no root should target the active mode (personal).
+    # A note that names no root is queued against the active mode (personal).
     text = "buy groceries this weekend"
-    resp = client.post(
-        "/command",
-        data={"text": text, "confirm": f"create_task:personal:{text}"},
+    resp = client.post("/command", data={"text": text})
+    assert "Review actions" in resp.text
+    # The queued action targets the personal root, and approving confirms it.
+    assert 'value="personal"' in resp.text
+    applied = approve(client, "create_task", "personal", text)
+    assert "to personal" in applied.text.lower()
+
+
+def approve(client, action, thread_path, title):
+    """Approve a single action from the review queue (via /apply)."""
+    return client.post(
+        "/apply",
+        data={"action": [action], "thread_path": [thread_path], "title": [title]},
     )
-    assert "to personal" in resp.text.lower()
 
 
-def test_command_creates_thread_and_task(client):
+def test_command_queues_then_applies(client):
     login(client)
-    # Create a thread via the heuristic command bar.
+    # The command bar only QUEUES actions; nothing is created yet.
     resp = client.post(
-        "/command",
-        data={"text": "start a new work project called Alpha", "confirm": ""},
+        "/command", data={"text": "start a new work project called Alpha"}
     )
     assert resp.status_code == 200
-    # Low confidence -> needs confirmation; confirm it.
-    resp = client.post(
-        "/command",
-        data={
-            "text": "start a new work project called Alpha",
-            "confirm": "create_thread:work:Alpha",
-        },
-    )
+    assert "Review actions" in resp.text
+    assert client.get("/thread/work/alpha").status_code == 404  # not applied
+
+    # Approving the action creates it.
+    resp = approve(client, "create_thread", "work", "Alpha")
     assert "Created thread work/alpha" in resp.text
 
     # Add a task through the thread endpoint.
@@ -121,13 +126,7 @@ def test_command_creates_thread_and_task(client):
 
 def test_nested_subtasks_over_http(client):
     login(client)
-    client.post(
-        "/command",
-        data={
-            "text": "start a new work project called Nested",
-            "confirm": "create_thread:work:Nested",
-        },
-    )
+    approve(client, "create_thread", "work", "Nested")
     # Add a top-level task.
     client.post("/thread/work/nested/task", data={"title": "Parent"})
     # Add a subtask under it (parent index-path "0").
@@ -153,13 +152,7 @@ def test_complete_and_restore_flow(client):
     login(client)
     # Personal work happens in PERSONAL mode (AI is scoped to the active mode).
     client.post("/mode/personal")
-    client.post(
-        "/command",
-        data={
-            "text": "start a new personal project called Beta",
-            "confirm": "create_thread:personal:Beta",
-        },
-    )
+    approve(client, "create_thread", "personal", "Beta")
     resp = client.post("/complete/personal/beta", follow_redirects=False)
     assert resp.status_code == 303
     archive = client.get("/archive")
@@ -170,10 +163,39 @@ def test_complete_and_restore_flow(client):
     assert thread.status_code == 200
 
 
+def test_command_queues_actions_without_applying(client):
+    """Input is ingested into a review queue; nothing is applied yet."""
+    login(client)
+    resp = client.post("/command", data={"text": "email the accountant about invoices"})
+    assert resp.status_code == 200
+    assert "Review actions" in resp.text
+    assert "action-tag" in resp.text
+    # The queue carries hidden fields for approval, and an Approve button.
+    assert 'name="action"' in resp.text
+    assert "Approve remaining" in resp.text
+    # Each action has its own Discard and OK (approve) controls.
+    assert "data-discard" in resp.text
+    assert "data-approve" in resp.text
+
+
+def test_apply_ignores_out_of_mode_action(client):
+    """A queued action targeting the other root is not applied."""
+    login(client)  # WORK mode
+    resp = approve(client, "create_task", "personal/whatever", "x")
+    assert "Nothing to apply" in resp.text
+
+
+def test_command_box_is_multiline_textarea(client):
+    """The command input is a 10-row textarea, not a single-line field."""
+    login(client)
+    page = client.get("/").text
+    assert "<textarea" in page and 'rows="10"' in page and 'id="command-input"' in page
+
+
 def test_work_mode_ignores_personal_input(client):
-    """In WORK mode, a note aimed at PERSONAL is skipped, not applied."""
+    """In WORK mode, a note aimed at PERSONAL is not queued — it's ignored."""
     login(client)  # default mode is WORK
-    resp = client.post("/command", data={"text": "personal buy milk", "confirm": ""})
+    resp = client.post("/command", data={"text": "personal buy milk"})
     assert resp.status_code == 200
     assert "Ignored" in resp.text and "WORK" in resp.text
     # And no personal thread was touched.
@@ -181,15 +203,9 @@ def test_work_mode_ignores_personal_input(client):
 
 
 def test_work_mode_forces_new_thread_into_work(client):
-    """A 'personal' thread requested in WORK mode is created under work/."""
+    """Approving a 'personal' create_thread in WORK mode lands it under work/."""
     login(client)
-    resp = client.post(
-        "/command",
-        data={
-            "text": "start a new personal project called Zeta",
-            "confirm": "create_thread:personal:Zeta",
-        },
-    )
+    resp = approve(client, "create_thread", "personal", "Zeta")
     assert "Created thread work/zeta" in resp.text
 
 

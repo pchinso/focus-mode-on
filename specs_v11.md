@@ -100,7 +100,8 @@
   stay visible in both light and dark themes.
 - **Permanent delete from archive**: an archived thread can be discarded forever
   (its folder removed from the vault) via a "Delete forever" action that asks
-  for confirmation, since it is irreversible.
+  for confirmation, since it is irreversible. A **"Delete all"** action purges
+  every archived thread at once (also confirmed).
 - **Uniform buttons**: labeled action buttons share a consistent height and
   padding so rows of controls align cleanly.
 - **Denser, calmer dashboard**: consistent card sizing, clearer section

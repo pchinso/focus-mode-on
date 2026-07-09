@@ -223,6 +223,18 @@ def test_complete_task_by_title_matches_nested(repo):
     assert thread.ordered_tasks()[0].children[0].done is True
 
 
+def test_purge_archived_thread(repo, tmp_path):
+    repo.create_thread("work", "Gone")
+    dest = repo.complete_thread("work/gone")  # -> _archive/work/gone
+    assert (tmp_path / dest).is_dir()
+    repo.purge_thread(dest)
+    assert not (tmp_path / dest).exists()
+    # Cannot purge an active (non-archived) thread.
+    repo.create_thread("work", "Live")
+    with pytest.raises(VaultError):
+        repo.purge_thread("work/live")
+
+
 def test_complete_and_restore_thread(repo, tmp_path):
     repo.create_thread("work", "Archive Me")
     dest = repo.complete_thread("work/archive-me")

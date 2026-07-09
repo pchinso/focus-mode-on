@@ -22,13 +22,18 @@
         {% if thread.completed %}archived {{ thread.completed.isoformat() }}{% else %}archived{% endif %}
       </span>
     </span>
-    <form
-      action="/restore/{{ thread.rel_path }}"
-      method="post"
-      style="margin-left: auto"
-    >
-      <button class="btn secondary" type="submit">↩ Restore</button>
-    </form>
+    <div class="archive-actions">
+      <form action="/restore/{{ thread.rel_path }}" method="post">
+        <button class="btn secondary" type="submit">↩ Restore</button>
+      </form>
+      <form
+        action="/purge/{{ thread.rel_path }}"
+        method="post"
+        data-confirm="Delete “{{ thread.title }}” forever? This cannot be undone."
+      >
+        <button class="btn danger" type="submit">🗑 Delete forever</button>
+      </form>
+    </div>
   </div>
   {% endfor %}
 </div>

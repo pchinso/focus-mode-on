@@ -250,6 +250,15 @@
     }
   });
 
+  // Delegated handler: confirm irreversible form submissions (e.g. purge).
+  document.addEventListener("submit", (ev) => {
+    const form = ev.target.closest("form[data-confirm]");
+    if (!form) return;
+    if (!window.confirm(form.getAttribute("data-confirm"))) {
+      ev.preventDefault();
+    }
+  });
+
   // Delegated handler: expand/collapse a card's pending-tasks panel.
   document.addEventListener("click", (ev) => {
     const btn = ev.target.closest("[data-pending-toggle]");

@@ -206,8 +206,14 @@ main {
   outline-offset: 1px;
 }
 
+/* Uniform buttons: same height and centering everywhere. */
 .btn {
-  padding: 0.6rem 1rem;
+  padding: 0 1rem;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
   border: 1px solid transparent;
   border-radius: 8px;
   background: var(--planet-blue);
@@ -215,12 +221,25 @@ main {
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .btn.secondary {
   background: var(--surface);
   color: var(--text-main);
   border-color: var(--border);
+}
+
+.btn.danger {
+  background: var(--dark-coral);
+  color: #fff;
+}
+
+.archive-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
 .btn:focus-visible,

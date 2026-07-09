@@ -315,6 +315,25 @@ class VaultRepo:
             self._record(f"Archive thread {rel_path}")
             return dest_rel
 
+    def purge_thread(self, archive_rel: str) -> None:
+        """Permanently delete an archived thread's folder from the vault.
+
+        Irreversible. Only paths under the archive directory may be purged, so
+        an active thread can never be destroyed by this call.
+
+        Raises:
+            VaultError: If the path is not under the archive or does not exist.
+        """
+        archive_rel = _clean_rel(archive_rel)
+        if not archive_rel.startswith(ARCHIVE_DIR + "/"):
+            raise VaultError(f"Not an archived path: {archive_rel}")
+        with self._lock:
+            target = self.base / archive_rel
+            if not target.is_dir():
+                raise VaultError(f"Archived thread not found: {archive_rel}")
+            shutil.rmtree(target)
+            self._record(f"Delete archived thread {archive_rel}")
+
     def restore_thread(self, archive_rel: str) -> str:
         """Restore an archived thread back to its original location.
 

@@ -253,6 +253,20 @@ def test_reparent_thread_over_http(client):
     assert client.get("/thread/work/parent/child").status_code == 200
 
 
+def test_archive_purge_deletes_forever(client):
+    login(client)
+    approve(client, "create_thread", "work", "Trash")
+    client.post("/complete/work/trash")  # archive it
+    archive = client.get("/archive").text
+    assert "Delete forever" in archive and "data-confirm" in archive
+    # Purge it permanently.
+    resp = client.post(
+        "/purge/_archive/work/trash", follow_redirects=False
+    )
+    assert resp.status_code == 303
+    assert "Trash" not in client.get("/archive").text
+
+
 def test_archive_shows_undo_toast(client):
     login(client)
     approve(client, "create_thread", "work", "Temp")

@@ -385,6 +385,17 @@ async def set_accent(rel_path: str, color: str = Form("")) -> Response:
     return RedirectResponse(f"/thread/{rel_path}", status_code=303)
 
 
+@app.post("/purge/{rel_path:path}", dependencies=[Depends(require_login)])
+async def purge_thread(rel_path: str) -> Response:
+    """Permanently delete an archived thread, then return to the archive."""
+    archive_rel = rel_path if rel_path.startswith(ARCHIVE_DIR) else f"{ARCHIVE_DIR}/{rel_path}"
+    try:
+        repo.purge_thread(archive_rel)
+    except VaultError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return RedirectResponse("/archive", status_code=303)
+
+
 @app.post("/regen-icon/{rel_path:path}", dependencies=[Depends(require_login)])
 async def regen_icon(rel_path: str, background: BackgroundTasks) -> Response:
     """Regenerate a thread's icon in the background, then return to its page."""

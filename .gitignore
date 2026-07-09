@@ -13,4 +13,5 @@ dist/
 
 # Personal vault — never tracked. The app creates work/ and personal/ on
 # startup; keep your Markdown data local (or in a separate private repo).
-vault/
+# Anchored to the repo root so it does NOT match the app/vault/ source package.
+/vault/

@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import BackgroundTasks, Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -307,6 +307,7 @@ async def command(request: Request, text: str = Form("")) -> Response:
 )
 async def apply_actions(
     request: Request,
+    background: BackgroundTasks,
     action: list[str] = Form(default=[]),
     thread_path: list[str] = Form(default=[]),
     title: list[str] = Form(default=[]),
@@ -315,7 +316,8 @@ async def apply_actions(
 
     Receives parallel arrays (one entry per still-queued action). Each is
     re-checked against the active mode before applying, so a tampered target in
-    the other root is ignored.
+    the other root is ignored. Icon generation for new threads is deferred to a
+    background task so the response returns immediately.
     """
     mode = current_mode(request)
     applied: list[str] = []
@@ -323,7 +325,7 @@ async def apply_actions(
         intent = Intent(action=act, thread_path=path, title=ttl, confidence=1.0)
         if not _intent_in_mode(intent, mode):
             continue
-        line = _apply_intent(intent, mode)
+        line = _apply_intent(intent, mode, bg=background)
         if line:
             applied.append(line)
     return templates.TemplateResponse(
@@ -349,13 +351,18 @@ def _intent_in_mode(intent: Intent, mode: str) -> bool:
     return _root_of(intent.thread_path) == mode
 
 
-def _apply_intent(intent: Intent, mode: str = DEFAULT_MODE) -> str:
+def _apply_intent(
+    intent: Intent, mode: str = DEFAULT_MODE, bg: BackgroundTasks | None = None
+) -> str:
     """Execute a single intent, returning a human-readable summary line.
 
     Args:
         intent: The intent to apply.
         mode: Active app mode, used as the default root for new threads when
             the intent does not name one.
+        bg: Optional background-task queue. When present, icon generation for a
+            newly created thread is scheduled on it instead of running inline,
+            so the response returns immediately.
     """
     try:
         if intent.action == "create_task":
@@ -371,7 +378,10 @@ def _apply_intent(intent: Intent, mode: str = DEFAULT_MODE) -> str:
         if intent.action == "create_thread":
             parent = _resolve_parent(intent.thread_path, intent.title, mode)
             thread = repo.create_thread(parent, intent.title)
-            _maybe_icon(thread.rel_path, intent.title)
+            if bg is not None:
+                bg.add_task(_maybe_icon, thread.rel_path, intent.title)
+            else:
+                _maybe_icon(thread.rel_path, intent.title)
             return f"Created thread {thread.rel_path}."
         if intent.action == "complete_thread":
             dest = repo.complete_thread(intent.thread_path)
@@ -414,18 +424,18 @@ def _resolve_parent(thread_path: str, title: str, mode: str) -> str:
 
 
 def _maybe_icon(rel_path: str, title: str) -> None:
-    """Attempt (best-effort) icon generation for a freshly created thread."""
+    """Generate a thread icon (best-effort); safe to run in the background.
+
+    Runs the slow image call, then records the icon filename in the thread's
+    frontmatter via a lock-serialized repo write.
+    """
     if not icons.available:
         return
     folder = settings.vault_dir / rel_path
     name = icons.generate(folder, title)
     if name:
         try:
-            thread = repo.get(rel_path)
-            thread.icon = name
-            from .vault.writer import write_thread
-
-            write_thread(settings.vault_dir, thread)
+            repo.set_icon(rel_path, name)
         except VaultError:
             pass
 

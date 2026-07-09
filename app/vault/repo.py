@@ -128,6 +128,17 @@ class VaultRepo:
             self._record(f"Create thread {rel}")
             return thread
 
+    def set_icon(self, rel_path: str, icon_name: str) -> None:
+        """Set a thread's icon filename in its frontmatter (lock-safe).
+
+        Safe to call from a background thread: the read-modify-write is
+        serialized under the vault lock.
+        """
+        with self._lock:
+            thread = self.get(rel_path)
+            thread.icon = icon_name
+            write_thread(self.base, thread)
+
     def add_task(
         self, rel_path: str, title: str, parent_path: list[int] | None = None
     ) -> Thread:

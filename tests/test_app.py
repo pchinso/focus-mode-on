@@ -209,6 +209,29 @@ def test_work_mode_forces_new_thread_into_work(client):
     assert "Created thread work/zeta" in resp.text
 
 
+def test_create_thread_schedules_icon_in_background(tmp_path, monkeypatch):
+    """Approving a create_thread defers icon generation to a background task."""
+    monkeypatch.setenv("VAULT_DIR", str(tmp_path))
+    monkeypatch.setenv("APP_PASSWORD", "p")
+    monkeypatch.setenv("APP_SECRET_KEY", "k")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setattr("app.config._load_dotenv", lambda: None)
+    import importlib
+
+    import app.main as main
+
+    importlib.reload(main)
+    from fastapi import BackgroundTasks
+
+    from app.ai.commands import Intent
+
+    bg = BackgroundTasks()
+    line = main._apply_intent(Intent("create_thread", "work", "BgTest"), "work", bg=bg)
+    assert "Created thread work/bgtest" in line
+    # The (slow) icon call is queued as a background task, not run inline.
+    assert len(bg.tasks) == 1
+
+
 def test_intent_in_mode_helper():
     import app.main as main
     from app.ai.commands import Intent

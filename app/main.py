@@ -413,6 +413,26 @@ async def delete_task(request: Request, rel_path: str, task_path: str) -> Respon
 
 
 @app.post(
+    "/thread/{rel_path:path}/bulk/{action}",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_login)],
+)
+async def bulk_tasks(
+    request: Request, rel_path: str, action: str, path: list[str] = Form(default=[])
+) -> Response:
+    """Apply a bulk action to the selected tasks; returns the task-list partial."""
+    if action not in ("complete", "delete"):
+        raise HTTPException(status_code=400, detail="Unknown action")
+    paths = [_parse_task_path(p) for p in path if p.strip()]
+    try:
+        repo.bulk_apply(rel_path, paths, action)
+    except VaultError:
+        raise HTTPException(status_code=400, detail="Invalid task")
+    thread = repo.get(rel_path)
+    return templates.TemplateResponse(request, "_tasks.html", {"thread": thread})
+
+
+@app.post(
     "/thread/{rel_path:path}/priority/{task_path}",
     response_class=HTMLResponse,
     dependencies=[Depends(require_login)],

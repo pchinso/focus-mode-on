@@ -253,6 +253,41 @@ class VaultRepo:
             self._record(f"Set accent {accent} on {thread.rel_path}")
             return thread
 
+    def bulk_apply(
+        self, rel_path: str, paths: list[list[int]], action: str
+    ) -> Thread:
+        """Apply a bulk action (``complete`` or ``delete``) to many tasks.
+
+        All paths are resolved against the current tree *before* any mutation,
+        so index shifts during the batch cannot mis-target. Deleting a task that
+        was already removed with an ancestor is a no-op.
+        """
+        with self._lock:
+            thread = self.get(rel_path)
+            targets = []
+            for path in paths:
+                try:
+                    container, task = _resolve_container(thread.tasks, path)
+                    targets.append((container, task))
+                except VaultError:
+                    continue
+            if action == "complete":
+                for _, task in targets:
+                    if not task.done:
+                        task.done = True
+                        task.completed = self._today()
+            elif action == "delete":
+                for container, task in targets:
+                    try:
+                        container.remove(task)
+                    except ValueError:
+                        pass
+            else:
+                raise VaultError(f"Unknown bulk action: {action}")
+            write_thread(self.base, thread)
+            self._record(f"Bulk {action} {len(targets)} task(s) in {thread.rel_path}")
+            return thread
+
     def cycle_priority(self, rel_path: str, path: list[int]) -> Thread:
         """Cycle a task's priority: normal → high → low → normal."""
         order = {"normal": "high", "high": "low", "low": "normal"}

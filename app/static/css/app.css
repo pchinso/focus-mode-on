@@ -986,6 +986,35 @@ img.icon {
   font-size: 0.8rem;
 }
 
+/* Multi-select bulk toolbar + selection checkbox. */
+.bulk-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  padding: 0.5rem 0.8rem;
+  border: 1px solid var(--water-turquoise);
+  border-radius: 8px;
+  background: var(--surface-alt);
+  flex-wrap: wrap;
+}
+
+.bulk-toolbar[hidden] {
+  display: none;
+}
+
+.bulk-count {
+  color: var(--text-soft);
+  margin-right: auto;
+}
+
+.task-select {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
 /* Priority marker. */
 .prio {
   flex: 0 0 auto;

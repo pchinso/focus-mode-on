@@ -95,6 +95,17 @@
 {% endif %}
 
 <h3 style="margin: 0 0 0.6rem">Tasks</h3>
+<div
+  id="bulk-toolbar"
+  class="bulk-toolbar"
+  data-thread="{{ thread.rel_path }}"
+  hidden
+>
+  <span class="bulk-count"><strong id="bulk-n">0</strong> selected</span>
+  <button class="btn secondary" type="button" data-bulk="complete">✓ Complete</button>
+  <button class="btn danger" type="button" data-bulk="delete">🗑 Delete</button>
+  <button class="btn secondary" type="button" data-bulk-clear>Clear</button>
+</div>
 <div id="task-list">
   {% include "_tasks.html" %}
 </div>

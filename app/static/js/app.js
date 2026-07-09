@@ -144,6 +144,50 @@
     }
   });
 
+  /* ---- Multi-select bulk task actions ---- */
+  function updateBulkToolbar() {
+    const toolbar = document.getElementById("bulk-toolbar");
+    if (!toolbar) return;
+    const checked = document.querySelectorAll(".task-select:checked");
+    const n = document.getElementById("bulk-n");
+    if (n) n.textContent = checked.length;
+    toolbar.hidden = checked.length === 0;
+  }
+
+  document.addEventListener("change", (ev) => {
+    if (ev.target.classList && ev.target.classList.contains("task-select")) {
+      updateBulkToolbar();
+    }
+  });
+
+  document.addEventListener("click", async (ev) => {
+    if (ev.target.closest("[data-bulk-clear]")) {
+      document
+        .querySelectorAll(".task-select:checked")
+        .forEach((c) => (c.checked = false));
+      updateBulkToolbar();
+      return;
+    }
+    const btn = ev.target.closest("[data-bulk]");
+    if (!btn) return;
+    ev.preventDefault();
+    const toolbar = document.getElementById("bulk-toolbar");
+    const rel = toolbar && toolbar.getAttribute("data-thread");
+    const checked = document.querySelectorAll(".task-select:checked");
+    if (!rel || !checked.length) return;
+    const action = btn.getAttribute("data-bulk");
+    if (
+      action === "delete" &&
+      !window.confirm("Delete " + checked.length + " selected task(s)?")
+    ) {
+      return;
+    }
+    const body = new FormData();
+    checked.forEach((c) => body.append("path", c.getAttribute("data-path")));
+    await submitSwap("/thread/" + rel + "/bulk/" + action, "POST", body, "#task-list");
+    updateBulkToolbar();
+  });
+
   // Delegated handler: reveal a task's inline due-date form.
   document.addEventListener("click", (ev) => {
     const btn = ev.target.closest("[data-due]");

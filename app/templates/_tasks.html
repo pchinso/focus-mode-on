@@ -9,6 +9,13 @@
     tabindex="0"
     style="padding-left: {{ 0.25 + depth * 1.25 }}rem"
   >
+    <input
+      type="checkbox"
+      class="task-select"
+      data-path="{{ path }}"
+      aria-label="Select task"
+      title="Select for bulk actions"
+    />
     {% if task.has_children %}
     <button
       class="caret"

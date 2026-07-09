@@ -490,6 +490,26 @@ def test_pwa_manifest_and_service_worker(client):
     assert sw.headers.get("service-worker-allowed") == "/"
 
 
+def test_bulk_complete_and_delete(client):
+    """v1.2: multi-select bulk complete and delete."""
+    login(client)
+    approve(client, "create_thread", "work", "Bulk")
+    for t in ("One", "Two", "Three"):
+        client.post("/thread/work/bulk/task", data={"title": t})
+    page = client.get("/thread/work/bulk").text
+    assert "task-select" in page and "bulk-toolbar" in page  # selection UI present
+    # Bulk-complete the first two (display indices 0 and 1).
+    resp = client.post(
+        "/thread/work/bulk/bulk/complete", data={"path": ["0", "1"]}
+    )
+    assert resp.text.count("✓") >= 2  # two marked done
+    # Bulk-delete a task (index 0 in the current order).
+    before = client.get("/thread/work/bulk").text
+    resp = client.post("/thread/work/bulk/bulk/delete", data={"path": ["0"]})
+    # One fewer task line than before.
+    assert resp.text.count('class="task-row') == before.count('class="task-row') - 1
+
+
 def test_priority_cycle_over_http(client):
     """v1.2: cycling priority shows the high/low marker."""
     login(client)

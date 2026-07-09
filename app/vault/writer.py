@@ -65,10 +65,11 @@ def _render_tasks(tasks: list[Task], depth: int, lines: list[str]) -> None:
     for task in order_tasks(tasks):
         mark = "x" if task.done else " "
         created = f" ➕ {_fmt_created(task.created)}" if task.created else ""
+        due = f" 📅 {task.due.isoformat()}" if task.due else ""
         done_stamp = (
             f" ✅ {task.completed.isoformat()}" if task.done and task.completed else ""
         )
-        lines.append(f"{indent}- [{mark}] {task.title}{created}{done_stamp}")
+        lines.append(f"{indent}- [{mark}] {task.title}{created}{due}{done_stamp}")
         if task.children:
             _render_tasks(task.children, depth + 1, lines)
 

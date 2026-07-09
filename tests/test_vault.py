@@ -188,6 +188,32 @@ def test_move_task_reorders_within_group(repo):
     assert [t.title for t in thread.ordered_tasks()] == ["C", "A", "B"]
 
 
+def test_due_date_round_trips_and_buckets():
+    from datetime import date as _date
+
+    from app.vault.model import due_bucket
+
+    t = _date(2026, 7, 9)
+    assert due_bucket(None, t) == "none"
+    assert due_bucket(_date(2026, 7, 8), t) == "overdue"
+    assert due_bucket(t, t) == "today"
+    assert due_bucket(_date(2026, 7, 12), t) == "week"
+    assert due_bucket(_date(2026, 8, 1), t) == "later"
+
+
+def test_set_due_persists(repo, tmp_path):
+    from datetime import date as _date
+
+    repo.create_thread("work", "Due")
+    repo.add_task("work/due", "Deliver report")
+    d = _date(2026, 7, 20)
+    repo.set_due("work/due", [0], d)
+    assert repo.get("work/due").ordered_tasks()[0].due == d
+    # Clearing works.
+    repo.set_due("work/due", [0], None)
+    assert repo.get("work/due").ordered_tasks()[0].due is None
+
+
 def test_set_accent_round_trips(repo, tmp_path):
     repo.create_thread("work", "Colorful")
     repo.set_accent("work/colorful", "#2cb8c7")

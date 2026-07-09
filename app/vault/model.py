@@ -30,6 +30,7 @@ class Task:
         done: Whether the task is completed.
         completed: Completion date, set when ``done`` is True.
         created: Creation timestamp, if recorded (Obsidian ``➕`` stamp).
+        due: Due date, if set (Obsidian ``📅`` stamp).
         children: Nested subtasks (may be arbitrarily deep).
     """
 
@@ -37,6 +38,7 @@ class Task:
     done: bool = False
     completed: date | None = None
     created: datetime | None = None
+    due: date | None = None
     children: list["Task"] = field(default_factory=list)
 
     @property
@@ -85,6 +87,19 @@ def is_stale(created: datetime | None, now: datetime, days: int = 14) -> bool:
     if created is None:
         return False
     return (now - created).days >= days
+
+
+def due_bucket(due: date | None, today: date) -> str:
+    """Classify a due date into an agenda bucket key."""
+    if due is None:
+        return "none"
+    if due < today:
+        return "overdue"
+    if due == today:
+        return "today"
+    if (due - today).days <= 7:
+        return "week"
+    return "later"
 
 
 def collect_pending(thread: "Thread") -> list[tuple[Task, str]]:

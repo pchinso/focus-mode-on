@@ -22,6 +22,8 @@ _DONE_STAMP_RE = re.compile(r"\s*✅\s*(?P<d>\d{4}-\d{2}-\d{2})\s*$")
 _CREATED_STAMP_RE = re.compile(
     r"\s*➕\s*(?P<c>\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2})?)"
 )
+# Due-date stamp (Obsidian 📅).
+_DUE_STAMP_RE = re.compile(r"\s*📅\s*(?P<d>\d{4}-\d{2}-\d{2})")
 
 
 def _parse_date(value: object) -> date | None:
@@ -103,7 +105,14 @@ def _parse_task(match: re.Match[str]) -> Task:
     if created_stamp:
         created = _parse_created(created_stamp.group("c"))
         body = _CREATED_STAMP_RE.sub("", body).strip()
-    return Task(title=body.strip(), done=done, completed=completed, created=created)
+    due: date | None = None
+    due_stamp = _DUE_STAMP_RE.search(body)
+    if due_stamp:
+        due = _parse_date(due_stamp.group("d"))
+        body = _DUE_STAMP_RE.sub("", body).strip()
+    return Task(
+        title=body.strip(), done=done, completed=completed, created=created, due=due
+    )
 
 
 def _parse_created(value: str) -> datetime | None:

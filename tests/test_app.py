@@ -464,6 +464,23 @@ def test_intent_in_mode_helper():
     assert main._intent_in_mode(Intent("create_thread", "personal", "t"), "work") is True
 
 
+def test_due_date_and_agenda(client):
+    """v1.2: set a due date and see the task in the right agenda bucket."""
+    login(client)
+    approve(client, "create_thread", "work", "Ship")
+    client.post("/thread/work/ship/task", data={"title": "Release notes"})
+    # Set an overdue date.
+    resp = client.post("/thread/work/ship/due/0", data={"due": "2020-01-01"})
+    assert "📅 2020-01-01" in resp.text and "overdue" in resp.text
+    # It appears under Overdue in the agenda.
+    agenda = client.get("/agenda").text
+    assert "Overdue" in agenda and "Release notes" in agenda
+    assert 'href="/agenda"' in agenda  # nav link
+    # Clearing the due date removes the badge (the date no longer shows).
+    resp = client.post("/thread/work/ship/due/0", data={"due": ""})
+    assert "2020-01-01" not in resp.text
+
+
 def test_search_finds_threads_and_tasks(client):
     """v1.2: full-text search matches thread titles and task text."""
     login(client)

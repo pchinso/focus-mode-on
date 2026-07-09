@@ -253,6 +253,16 @@ class VaultRepo:
             self._record(f"Set accent {accent} on {thread.rel_path}")
             return thread
 
+    def set_due(self, rel_path: str, path: list[int], due: date | None) -> Thread:
+        """Set (or clear) a task's due date."""
+        with self._lock:
+            thread = self.get(rel_path)
+            task = _resolve_task(thread.tasks, path)
+            task.due = due
+            write_thread(self.base, thread)
+            self._record(f"Set due {due} in {thread.rel_path}: {task.title}")
+            return thread
+
     def rename_task(self, rel_path: str, path: list[int], new_title: str) -> Thread:
         """Rename the task at an index-path, preserving its state and children."""
         with self._lock:

@@ -986,6 +986,73 @@ img.icon {
   font-size: 0.8rem;
 }
 
+/* Due-date badges + form. */
+.due {
+  font-size: 0.72rem;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 0 0.45rem;
+  border: 1px solid var(--border);
+  color: var(--text-soft);
+}
+
+.due.overdue {
+  background: var(--light-coral);
+  color: #5a1c1c;
+  border-color: transparent;
+}
+
+.due.today {
+  background: var(--light-water);
+  color: #08343a;
+  border-color: transparent;
+}
+
+.due-form {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.9rem 0.5rem;
+}
+
+.due-form input[type="date"] {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-alt);
+  color: var(--text-main);
+  font: inherit;
+}
+
+.due-hint {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+}
+
+/* Agenda buckets. */
+.agenda-bucket {
+  margin-bottom: 1.5rem;
+}
+
+.agenda-heading {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0.3rem;
+  margin: 0 0 0.6rem;
+}
+
+.agenda-heading.overdue {
+  border-color: var(--energy-coral);
+  color: var(--dark-coral);
+}
+
+.agenda-heading.today {
+  border-color: var(--water-turquoise);
+}
+
 /* ---------- Find / search (/search) ---------- */
 .search-form {
   display: flex;

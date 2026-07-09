@@ -32,6 +32,10 @@
       <span class="label">{{ task.title }}</span>
     </button>
 
+    {% if not task.done and task.due %}
+    <span class="due {{ due_bucket(task.due, today()) }}" title="Due {{ task.due.isoformat() }}">📅 {{ task.due.isoformat() }}</span>
+    {% endif %}
+
     {% if task.done and task.completed %}
     <span class="date">{{ task.completed.isoformat() }}</span>
     {% elif not task.done and task.created %}
@@ -68,6 +72,13 @@
       <button
         class="row-btn"
         type="button"
+        data-due
+        aria-label="Set due date"
+        title="Set due date"
+      >📅</button>
+      <button
+        class="row-btn"
+        type="button"
         data-rename
         aria-label="Rename task"
         title="Rename"
@@ -100,6 +111,19 @@
   >
     <input type="text" name="title" value="{{ task.title }}" autocomplete="off" />
     <button class="btn" type="submit">Save</button>
+  </form>
+
+  <form
+    class="due-form"
+    action="/thread/{{ thread_rel }}/due/{{ path }}"
+    method="post"
+    data-swap="#task-list"
+    hidden
+    style="padding-left: {{ 1.5 + depth * 1.25 }}rem"
+  >
+    <input type="date" name="due" value="{{ task.due.isoformat() if task.due else '' }}" />
+    <button class="btn" type="submit">Set</button>
+    <span class="due-hint">(empty + Set clears)</span>
   </form>
 
   <form

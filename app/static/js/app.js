@@ -144,6 +144,22 @@
     }
   });
 
+  // Delegated handler: reveal a task's inline due-date form.
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("[data-due]");
+    if (!btn) return;
+    ev.preventDefault();
+    const item = btn.closest(".task-item");
+    const form = item && item.querySelector(":scope > .due-form");
+    if (form) {
+      form.hidden = !form.hidden;
+      if (!form.hidden) {
+        const input = form.querySelector('input[type="date"]');
+        if (input) input.focus();
+      }
+    }
+  });
+
   // After a queue row is resolved, remove it; if the queue is now empty,
   // refresh the page (approved) or show a note (all discarded).
   function resolveQueueRow(item, approvedAny) {

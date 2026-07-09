@@ -31,4 +31,4 @@
 - [X] review: create a new specs_v12.md file with some proposal features an better UI.
 - [ ] git action: merge v1.1 branch to main.
 - [X] git action: new branch v1.2
-- [ ] feat: in branch v1.2 implement specs_v12.md features (in progress: full-text search + stale smart list done; dates/agenda, priorities, drag-and-drop, multi-select, insights, notes/quick-capture, PWA pending)
+- [ ] feat: in branch v1.2 implement specs_v12.md features (in progress: full-text search, stale smart list, due dates + agenda view done; priorities, drag-and-drop, multi-select, insights, notes/quick-capture, PWA pending)

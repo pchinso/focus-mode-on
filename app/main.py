@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from urllib.parse import quote
 
@@ -27,6 +27,7 @@ from .vault.model import (
     ARCHIVE_DIR,
     ROOTS,
     collect_pending,
+    due_bucket,
     human_age,
     is_stale,
     slugify,
@@ -51,6 +52,8 @@ templates.env.globals["now"] = datetime.now
 templates.env.globals["human_age"] = human_age
 templates.env.globals["is_stale"] = is_stale
 templates.env.globals["pending_list"] = collect_pending
+templates.env.globals["due_bucket"] = due_bucket
+templates.env.globals["today"] = date.today
 
 repo = VaultRepo(settings.vault_dir)
 auth = Auth(settings.password, settings.secret_key)
@@ -223,6 +226,29 @@ def _search_vault(query: str):
 
 
 @app.get(
+    "/agenda", response_class=HTMLResponse, dependencies=[Depends(require_login)]
+)
+async def agenda_view(request: Request) -> Response:
+    """Pending tasks grouped by due-date bucket across both roots."""
+    today = date.today()
+    buckets: dict[str, list] = {
+        "overdue": [],
+        "today": [],
+        "week": [],
+        "later": [],
+        "none": [],
+    }
+    for root in repo.roots():
+        for task, owner in collect_pending(root):
+            buckets[due_bucket(task.due, today)].append((task, owner))
+    for key in ("overdue", "today", "week", "later"):
+        buckets[key].sort(key=lambda pr: pr[0].due or date.max)
+    return templates.TemplateResponse(
+        request, "agenda.html", {"buckets": buckets}
+    )
+
+
+@app.get(
     "/tree", response_class=HTMLResponse, dependencies=[Depends(require_login)]
 )
 async def tree_view(request: Request) -> Response:
@@ -342,6 +368,29 @@ async def delete_task(request: Request, rel_path: str, task_path: str) -> Respon
     """Delete a task (and its subtree) at a dotted index-path."""
     try:
         repo.delete_task(rel_path, _parse_task_path(task_path))
+    except VaultError:
+        raise HTTPException(status_code=400, detail="Invalid task")
+    thread = repo.get(rel_path)
+    return templates.TemplateResponse(request, "_tasks.html", {"thread": thread})
+
+
+@app.post(
+    "/thread/{rel_path:path}/due/{task_path}",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_login)],
+)
+async def set_task_due(
+    request: Request, rel_path: str, task_path: str, due: str = Form("")
+) -> Response:
+    """Set or clear a task's due date; returns the task-list partial."""
+    parsed: date | None = None
+    if due.strip():
+        try:
+            parsed = date.fromisoformat(due.strip())
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Bad date")
+    try:
+        repo.set_due(rel_path, _parse_task_path(task_path), parsed)
     except VaultError:
         raise HTTPException(status_code=400, detail="Invalid task")
     thread = repo.get(rel_path)

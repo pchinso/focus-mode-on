@@ -149,6 +149,15 @@
     if (item) resolveQueueRow(item, false);
   });
 
+  // Delegated handler: discard the whole queue at once.
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("[data-discard-all]");
+    if (!btn) return;
+    ev.preventDefault();
+    const form = btn.closest("form");
+    if (form) form.outerHTML = '<p class="empty">All actions discarded.</p>';
+  });
+
   // Delegated handler: approve (OK) one action from the review queue.
   document.addEventListener("click", async (ev) => {
     const btn = ev.target.closest("[data-approve]");
@@ -220,6 +229,157 @@
       ev.preventDefault();
       form.requestSubmit();
     }
+  });
+
+  /* ---- Dashboard search / filter ---- */
+  document.addEventListener("input", (ev) => {
+    if (!ev.target || ev.target.id !== "dashboard-search") return;
+    const q = ev.target.value.trim().toLowerCase();
+    const cards = document.querySelectorAll("#thread-cards .card");
+    let shown = 0;
+    cards.forEach((card) => {
+      const name = (card.querySelector(".name") || {}).textContent || "";
+      const match = name.toLowerCase().indexOf(q) !== -1;
+      card.style.display = match ? "" : "none";
+      if (match) shown++;
+    });
+    const empty = document.getElementById("search-empty");
+    if (empty) empty.hidden = shown !== 0 || cards.length === 0;
+  });
+
+  /* ---- Command palette (Ctrl/Cmd+K) ---- */
+  let paletteItems = [];
+  let paletteIndex = 0;
+  let paletteThreads = null;
+
+  function paletteCommands() {
+    return [
+      { label: "Go to Dashboard", run: () => (window.location.href = "/") },
+      { label: "Open Archive", run: () => (window.location.href = "/archive") },
+      {
+        label: "Switch to WORK mode",
+        run: () =>
+          fetch("/mode/work", { method: "POST" }).then(
+            () => (window.location.href = "/")
+          ),
+      },
+      {
+        label: "Switch to PERSONAL mode",
+        run: () =>
+          fetch("/mode/personal", { method: "POST" }).then(
+            () => (window.location.href = "/")
+          ),
+      },
+      { label: "Toggle light/dark theme", run: toggleTheme },
+    ];
+  }
+
+  async function openPalette() {
+    const overlay = document.getElementById("palette-overlay");
+    const input = document.getElementById("palette-input");
+    if (!overlay || !input) return;
+    overlay.hidden = false;
+    input.value = "";
+    input.focus();
+    if (paletteThreads === null) {
+      try {
+        const resp = await fetch("/threads.json", {
+          headers: { "X-Requested-With": "fetch" },
+        });
+        const data = await resp.json();
+        paletteThreads = (data.threads || []).map((t) => ({
+          label: t.title + "  ·  " + t.path,
+          run: () => (window.location.href = "/thread/" + t.path),
+        }));
+      } catch (e) {
+        paletteThreads = [];
+      }
+    }
+    renderPalette("");
+  }
+
+  function closePalette() {
+    const overlay = document.getElementById("palette-overlay");
+    if (overlay) overlay.hidden = true;
+  }
+
+  function renderPalette(query) {
+    const list = document.getElementById("palette-list");
+    if (!list) return;
+    const all = paletteCommands().concat(paletteThreads || []);
+    const q = query.trim().toLowerCase();
+    paletteItems = q
+      ? all.filter((i) => i.label.toLowerCase().indexOf(q) !== -1)
+      : all;
+    paletteIndex = 0;
+    list.innerHTML = paletteItems
+      .map(
+        (i, n) =>
+          '<li class="palette-item' +
+          (n === 0 ? " sel" : "") +
+          '" data-i="' +
+          n +
+          '">' +
+          i.label.replace(/</g, "&lt;") +
+          "</li>"
+      )
+      .join("");
+  }
+
+  function paletteMove(delta) {
+    if (!paletteItems.length) return;
+    paletteIndex = (paletteIndex + delta + paletteItems.length) % paletteItems.length;
+    const list = document.getElementById("palette-list");
+    if (!list) return;
+    list.querySelectorAll(".palette-item").forEach((el, n) => {
+      el.classList.toggle("sel", n === paletteIndex);
+      if (n === paletteIndex) el.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  function paletteActivate() {
+    const item = paletteItems[paletteIndex];
+    closePalette();
+    if (item) item.run();
+  }
+
+  document.addEventListener("keydown", (ev) => {
+    if ((ev.ctrlKey || ev.metaKey) && (ev.key === "k" || ev.key === "K")) {
+      ev.preventDefault();
+      openPalette();
+      return;
+    }
+    const overlay = document.getElementById("palette-overlay");
+    if (!overlay || overlay.hidden) return;
+    if (ev.key === "ArrowDown") {
+      ev.preventDefault();
+      paletteMove(1);
+    } else if (ev.key === "ArrowUp") {
+      ev.preventDefault();
+      paletteMove(-1);
+    } else if (ev.key === "Enter") {
+      ev.preventDefault();
+      paletteActivate();
+    } else if (ev.key === "Escape") {
+      ev.preventDefault();
+      closePalette();
+    }
+  });
+
+  document.addEventListener("input", (ev) => {
+    if (ev.target && ev.target.id === "palette-input") renderPalette(ev.target.value);
+  });
+
+  document.addEventListener("click", (ev) => {
+    const li = ev.target.closest(".palette-item");
+    if (li) {
+      paletteIndex = parseInt(li.getAttribute("data-i"), 10) || 0;
+      paletteActivate();
+      return;
+    }
+    // Click outside the panel closes the palette.
+    const overlay = document.getElementById("palette-overlay");
+    if (overlay && !overlay.hidden && ev.target === overlay) closePalette();
   });
 
   // Delegated handler for elements that post on click (task toggles, confirms).

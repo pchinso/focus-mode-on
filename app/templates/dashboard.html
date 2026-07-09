@@ -68,11 +68,20 @@
     <span class="pill">{{ active.children | length }} thread{{ 's' if active.children | length != 1 else '' }}</span>
   </div>
   {% if active.children %}
-  <div class="cards">
+  <input
+    type="search"
+    id="dashboard-search"
+    class="dashboard-search"
+    placeholder="Filter threads…  (type to narrow)"
+    autocomplete="off"
+    aria-label="Filter threads"
+  />
+  <div class="cards" id="thread-cards">
     {% for thread in active.children %}
     {{ ui.thread_card(thread) }}
     {% endfor %}
   </div>
+  <p class="empty" id="search-empty" hidden>No threads match your filter.</p>
   {% else %}
   <p class="empty">
     No threads in {{ active.title }} yet. Use the command bar to start one, or

@@ -60,6 +60,22 @@
 
     <main>{% block content %}{% endblock %}</main>
 
+    <div id="palette-overlay" class="overlay" hidden>
+      <div class="panel palette-panel">
+        <input
+          type="text"
+          id="palette-input"
+          placeholder="Jump to a thread, or type a command…"
+          autocomplete="off"
+        />
+        <ul id="palette-list" class="palette-list"></ul>
+        <p class="kbd-hint">
+          <kbd>↑</kbd>/<kbd>↓</kbd> move · <kbd>Enter</kbd> open ·
+          <kbd>Esc</kbd> close
+        </p>
+      </div>
+    </div>
+
     <div id="help-overlay" class="overlay" hidden>
       <div class="panel">
         <h2>Keyboard shortcuts</h2>

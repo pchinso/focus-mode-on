@@ -259,6 +259,62 @@ main {
   letter-spacing: 0.08em;
 }
 
+/* Dashboard search / filter. */
+.dashboard-search {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-main);
+  font: inherit;
+}
+
+.dashboard-search:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+/* Command palette. */
+.palette-panel {
+  width: min(560px, 92vw);
+  padding: 0.75rem;
+}
+
+.palette-panel #palette-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.palette-list {
+  list-style: none;
+  margin: 0.6rem 0 0.2rem;
+  padding: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.palette-item {
+  padding: 0.5rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.palette-item.sel,
+.palette-item:hover {
+  background: var(--select-bg);
+}
+
 /* Cards grid. */
 .cards {
   display: grid;

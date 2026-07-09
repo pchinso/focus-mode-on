@@ -255,6 +255,35 @@ def test_intent_in_mode_helper():
     assert main._intent_in_mode(Intent("create_thread", "personal", "t"), "work") is True
 
 
+def test_dashboard_has_search_and_palette(client):
+    """v1.1: dashboard search box, command palette, and Ctrl+K wiring exist."""
+    login(client)
+    approve(client, "create_thread", "work", "Alpha")  # ensure a card is present
+    page = client.get("/").text
+    assert 'id="dashboard-search"' in page  # search/filter box
+    assert 'id="palette-overlay"' in page and 'id="palette-input"' in page
+
+
+def test_threads_json_lists_active_threads(client):
+    """v1.1: /threads.json powers the command palette."""
+    login(client)
+    approve(client, "create_thread", "work", "Reporting")
+    client.post("/mode/personal")
+    approve(client, "create_thread", "personal", "Health")
+    data = client.get("/threads.json").json()
+    paths = {t["path"] for t in data["threads"]}
+    assert "work/reporting" in paths and "personal/health" in paths
+    # Root nodes themselves are not listed as jump targets.
+    assert "work" not in paths and "personal" not in paths
+
+
+def test_review_queue_has_discard_all(client):
+    """v1.1: the review queue offers a Discard all control."""
+    login(client)
+    resp = client.post("/command", data={"text": "email the accountant"})
+    assert "data-discard-all" in resp.text
+
+
 def test_app_has_logo_and_favicon(client):
     """The header shows a vector logo mark and the favicon is served."""
     login(client)

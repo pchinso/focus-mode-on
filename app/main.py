@@ -458,6 +458,21 @@ async def icon(rel_path: str) -> Response:
 # -- misc ------------------------------------------------------------------
 
 
+@app.get("/threads.json", dependencies=[Depends(require_login)])
+async def threads_json() -> dict[str, object]:
+    """Flat list of all active threads (both roots) for the command palette."""
+    items: list[dict[str, str]] = []
+
+    def walk(threads) -> None:
+        for t in threads:
+            if t.rel_path and t.rel_path not in ROOTS:
+                items.append({"path": t.rel_path, "title": t.title, "root": t.root})
+            walk(t.children)
+
+    walk(repo.roots())
+    return {"threads": items}
+
+
 @app.get("/health")
 async def health() -> dict[str, object]:
     """Liveness probe with feature availability."""

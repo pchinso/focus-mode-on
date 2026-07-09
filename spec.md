@@ -295,8 +295,10 @@ focus-mode-on/
   PERSONAL) per the water/energy rule.
 - **Dashboard (entry point)**: shows the active mode's root and its active
   thread cards (icon, title, pending count, sub-thread count). A global
-  **command bar** (focused with `/`) accepts natural-language input anywhere
-  in the app.
+  **command bar** (focused with `/`) accepts natural-language input. It is a
+  **multi-line text box (10 rows)** so longer notes can be composed and read at
+  once; it grows/scrolls beyond 10 lines. `Enter` inserts a newline;
+  **`Ctrl`/`Cmd`+`Enter`** (or the Run button) submits.
 - **Thread view**: breadcrumb from root; child threads as cards; a **task
   tree** at the end with completed tasks above pending ones at every level.
   Actions: add task, add subtask (nest under any task), toggle task at any

@@ -31,6 +31,7 @@ class Task:
         completed: Completion date, set when ``done`` is True.
         created: Creation timestamp, if recorded (Obsidian ``➕`` stamp).
         due: Due date, if set (Obsidian ``📅`` stamp).
+        priority: ``high`` / ``normal`` / ``low`` (Obsidian ``🔺``/``🔽``).
         children: Nested subtasks (may be arbitrarily deep).
     """
 
@@ -39,6 +40,7 @@ class Task:
     completed: date | None = None
     created: datetime | None = None
     due: date | None = None
+    priority: str = "normal"
     children: list["Task"] = field(default_factory=list)
 
     @property

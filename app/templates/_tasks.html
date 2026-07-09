@@ -29,6 +29,7 @@
       aria-pressed="{{ 'true' if task.done else 'false' }}"
     >
       <span class="box">{{ '✓' if task.done else '' }}</span>
+      {% if task.priority == 'high' %}<span class="prio high" title="High priority">🔺</span>{% elif task.priority == 'low' %}<span class="prio low" title="Low priority">🔽</span>{% endif %}
       <span class="label">{{ task.title }}</span>
     </button>
 
@@ -69,6 +70,14 @@
         aria-label="Move down"
         title="Move down"
       >▼</button>
+      <button
+        class="row-btn"
+        type="button"
+        data-post="/thread/{{ thread_rel }}/priority/{{ path }}"
+        data-swap="#task-list"
+        aria-label="Cycle priority"
+        title="Cycle priority (normal → high → low)"
+      >⚑</button>
       <button
         class="row-btn"
         type="button"

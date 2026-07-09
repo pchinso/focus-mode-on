@@ -986,6 +986,12 @@ img.icon {
   font-size: 0.8rem;
 }
 
+/* Priority marker. */
+.prio {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+}
+
 /* Due-date badges + form. */
 .due {
   font-size: 0.72rem;

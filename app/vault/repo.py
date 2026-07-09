@@ -253,6 +253,17 @@ class VaultRepo:
             self._record(f"Set accent {accent} on {thread.rel_path}")
             return thread
 
+    def cycle_priority(self, rel_path: str, path: list[int]) -> Thread:
+        """Cycle a task's priority: normal → high → low → normal."""
+        order = {"normal": "high", "high": "low", "low": "normal"}
+        with self._lock:
+            thread = self.get(rel_path)
+            task = _resolve_task(thread.tasks, path)
+            task.priority = order.get(task.priority, "high")
+            write_thread(self.base, thread)
+            self._record(f"Set priority {task.priority} in {thread.rel_path}: {task.title}")
+            return thread
+
     def set_due(self, rel_path: str, path: list[int], due: date | None) -> Thread:
         """Set (or clear) a task's due date."""
         with self._lock:

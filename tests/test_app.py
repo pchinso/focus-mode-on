@@ -490,6 +490,17 @@ def test_pwa_manifest_and_service_worker(client):
     assert sw.headers.get("service-worker-allowed") == "/"
 
 
+def test_priority_cycle_over_http(client):
+    """v1.2: cycling priority shows the high/low marker."""
+    login(client)
+    approve(client, "create_thread", "work", "Prio")
+    client.post("/thread/work/prio/task", data={"title": "Ship"})
+    resp = client.post("/thread/work/prio/priority/0")  # normal -> high
+    assert "🔺" in resp.text
+    resp = client.post("/thread/work/prio/priority/0")  # high -> low
+    assert "🔽" in resp.text
+
+
 def test_due_date_and_agenda(client):
     """v1.2: set a due date and see the task in the right agenda bucket."""
     login(client)

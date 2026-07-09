@@ -24,6 +24,9 @@ _CREATED_STAMP_RE = re.compile(
 )
 # Due-date stamp (Obsidian 📅).
 _DUE_STAMP_RE = re.compile(r"\s*📅\s*(?P<d>\d{4}-\d{2}-\d{2})")
+# Priority stamps (Obsidian 🔺 high, 🔽 low).
+_PRIO_HIGH_RE = re.compile(r"\s*🔺")
+_PRIO_LOW_RE = re.compile(r"\s*🔽")
 
 
 def _parse_date(value: object) -> date | None:
@@ -110,8 +113,20 @@ def _parse_task(match: re.Match[str]) -> Task:
     if due_stamp:
         due = _parse_date(due_stamp.group("d"))
         body = _DUE_STAMP_RE.sub("", body).strip()
+    priority = "normal"
+    if _PRIO_HIGH_RE.search(body):
+        priority = "high"
+        body = _PRIO_HIGH_RE.sub("", body).strip()
+    elif _PRIO_LOW_RE.search(body):
+        priority = "low"
+        body = _PRIO_LOW_RE.sub("", body).strip()
     return Task(
-        title=body.strip(), done=done, completed=completed, created=created, due=due
+        title=body.strip(),
+        done=done,
+        completed=completed,
+        created=created,
+        due=due,
+        priority=priority,
     )
 
 

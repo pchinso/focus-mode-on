@@ -413,6 +413,21 @@ async def delete_task(request: Request, rel_path: str, task_path: str) -> Respon
 
 
 @app.post(
+    "/thread/{rel_path:path}/priority/{task_path}",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_login)],
+)
+async def cycle_priority(request: Request, rel_path: str, task_path: str) -> Response:
+    """Cycle a task's priority and return the task-list partial."""
+    try:
+        repo.cycle_priority(rel_path, _parse_task_path(task_path))
+    except VaultError:
+        raise HTTPException(status_code=400, detail="Invalid task")
+    thread = repo.get(rel_path)
+    return templates.TemplateResponse(request, "_tasks.html", {"thread": thread})
+
+
+@app.post(
     "/thread/{rel_path:path}/due/{task_path}",
     response_class=HTMLResponse,
     dependencies=[Depends(require_login)],

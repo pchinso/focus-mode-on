@@ -188,6 +188,16 @@ def test_move_task_reorders_within_group(repo):
     assert [t.title for t in thread.ordered_tasks()] == ["C", "A", "B"]
 
 
+def test_priority_cycles_and_round_trips(repo, tmp_path):
+    repo.create_thread("work", "Prio")
+    repo.add_task("work/prio", "Important")
+    # normal -> high -> low -> normal
+    assert repo.cycle_priority("work/prio", [0]).ordered_tasks()[0].priority == "high"
+    assert repo.get("work/prio").ordered_tasks()[0].priority == "high"  # persisted
+    assert repo.cycle_priority("work/prio", [0]).ordered_tasks()[0].priority == "low"
+    assert repo.cycle_priority("work/prio", [0]).ordered_tasks()[0].priority == "normal"
+
+
 def test_due_date_round_trips_and_buckets():
     from datetime import date as _date
 

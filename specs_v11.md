@@ -84,6 +84,11 @@
 - **Icon legibility in dark mode**: generated thread icons render on a constant
   light chip (contained, padded) so images with transparent or dark content
   stay visible in both light and dark themes.
+- **Permanent delete from archive**: an archived thread can be discarded forever
+  (its folder removed from the vault) via a "Delete forever" action that asks
+  for confirmation, since it is irreversible.
+- **Uniform buttons**: labeled action buttons share a consistent height and
+  padding so rows of controls align cleanly.
 - **Denser, calmer dashboard**: consistent card sizing, clearer section
   headers, subtle hover/selection motion (respecting reduced-motion).
 - **Sticky command bar** that collapses to a single line on scroll and expands

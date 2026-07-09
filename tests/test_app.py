@@ -148,6 +148,27 @@ def test_nested_subtasks_over_http(client):
     assert "data-toggle-collapse" in page.text  # collapse caret present
 
 
+def test_card_pending_panel_lists_tasks_oldest_first(client):
+    """v1.1: a card's [+] panel lists pending tasks (oldest first), linkable."""
+    login(client)
+    approve(client, "create_thread", "work", "Proj")
+    client.post("/thread/work/proj/task", data={"title": "Older task"})
+    client.post("/thread/work/proj/task", data={"title": "Newer task"})
+    page = client.get("/").text
+    assert "pending-toggle" in page  # the [+] button
+    assert "pending-panel" in page
+    assert "Older task" in page and "Newer task" in page
+    # Tasks link back to their owning thread.
+    assert '/thread/work/proj" class="pending-link"' in page
+
+
+def test_generated_icon_has_light_chip_css(client):
+    """v1.1: img icons get a constant light chip so dark-mode icons stay visible."""
+    login(client)
+    css = client.get("/static/css/app.css").text
+    assert "img.icon" in css and "background: #fff" in css
+
+
 def test_command_bar_on_every_page(client):
     """v1.1: the AI command box is present on the dashboard AND thread pages."""
     login(client)

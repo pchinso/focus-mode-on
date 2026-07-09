@@ -9,19 +9,43 @@
 {%- endmacro %}
 
 {% macro thread_card(thread) %}
-<a class="card" href="/thread/{{ thread.rel_path }}" data-nav>
-  {% if thread.icon %}
-  <img class="icon" src="/icon/{{ thread.rel_path }}" alt="" />
-  {% else %}
-  <span class="icon" style="background: {{ glyph_color(thread) }}">{{ initials(thread.title) }}</span>
-  {% endif %}
-  <span class="meta">
-    <span class="name">{{ thread.title }}</span>
-    <span class="sub">
-      {% set pc = thread.pending_count %}
-      {% if pc %}{{ pc }} pending{% else %}all done{% endif %}
-      {% if thread.children %} · {{ thread.children | length }} sub-thread{{ 's' if thread.children | length != 1 else '' }}{% endif %}
+{% set pend = pending_list(thread) %}
+<div class="card-wrap">
+  <a class="card" href="/thread/{{ thread.rel_path }}" data-nav>
+    {% if thread.icon %}
+    <img class="icon" src="/icon/{{ thread.rel_path }}" alt="" />
+    {% else %}
+    <span class="icon" style="background: {{ glyph_color(thread) }}">{{ initials(thread.title) }}</span>
+    {% endif %}
+    <span class="meta">
+      <span class="name">{{ thread.title }}</span>
+      <span class="sub">
+        {% set pc = thread.pending_count %}
+        {% if pc %}{{ pc }} pending{% else %}all done{% endif %}
+        {% if thread.children %} · {{ thread.children | length }} sub-thread{{ 's' if thread.children | length != 1 else '' }}{% endif %}
+      </span>
     </span>
-  </span>
-</a>
+  </a>
+  {% if pend %}
+  <button
+    class="pending-toggle"
+    type="button"
+    data-pending-toggle
+    aria-label="Show pending tasks"
+    title="Pending tasks (oldest first)"
+  >＋</button>
+  <div class="pending-panel" hidden>
+    <ul>
+      {% for task, owner in pend %}
+      <li>
+        <a href="/thread/{{ owner }}" class="pending-link">{{ task.title }}</a>
+        {% if task.created %}
+        <span class="age {{ 'old' if is_stale(task.created, now()) else '' }}">{{ human_age(task.created, now()) }}</span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
 {% endmacro %}

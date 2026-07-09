@@ -250,6 +250,19 @@
     }
   });
 
+  // Delegated handler: expand/collapse a card's pending-tasks panel.
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("[data-pending-toggle]");
+    if (!btn) return;
+    ev.preventDefault();
+    const wrap = btn.closest(".card-wrap");
+    const panel = wrap && wrap.querySelector(".pending-panel");
+    if (panel) {
+      panel.hidden = !panel.hidden;
+      btn.textContent = panel.hidden ? "＋" : "－";
+    }
+  });
+
   // Enable the Move (re-parent) button only once a destination is chosen.
   document.addEventListener("change", (ev) => {
     if (!ev.target.classList || !ev.target.classList.contains("move-select")) return;

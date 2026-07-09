@@ -23,7 +23,14 @@ from .ai.commands import AICommandLayer, Intent
 from .ai.icons import IconGenerator
 from .auth import SESSION_COOKIE, Auth
 from .config import load_settings
-from .vault.model import ARCHIVE_DIR, ROOTS, human_age, is_stale, slugify
+from .vault.model import (
+    ARCHIVE_DIR,
+    ROOTS,
+    collect_pending,
+    human_age,
+    is_stale,
+    slugify,
+)
 from .vault.repo import VaultError, VaultRepo
 
 MODE_COOKIE = "focus_mode"
@@ -43,6 +50,7 @@ templates.env.globals["ROOTS"] = ROOTS
 templates.env.globals["now"] = datetime.now
 templates.env.globals["human_age"] = human_age
 templates.env.globals["is_stale"] = is_stale
+templates.env.globals["pending_list"] = collect_pending
 
 repo = VaultRepo(settings.vault_dir)
 auth = Auth(settings.password, settings.secret_key)

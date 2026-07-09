@@ -86,6 +86,35 @@ def is_stale(created: datetime | None, now: datetime, days: int = 14) -> bool:
         return False
     return (now - created).days >= days
 
+
+def collect_pending(thread: "Thread") -> list[tuple[Task, str]]:
+    """Flatten pending tasks in a thread subtree, oldest-first.
+
+    Walks the thread and all its descendant sub-threads, collecting every
+    not-done task paired with the vault path of the thread it belongs to, so a
+    card can list them and link each to its owning thread.
+
+    Returns:
+        List of ``(task, owner_rel_path)`` sorted by creation date ascending
+        (oldest first); tasks with no recorded date sort last.
+    """
+    out: list[tuple[Task, str]] = []
+
+    def walk_tasks(tasks: list[Task], owner: str) -> None:
+        for t in tasks:
+            if not t.done:
+                out.append((t, owner))
+            walk_tasks(t.children, owner)
+
+    def walk(th: "Thread") -> None:
+        walk_tasks(th.tasks, th.rel_path)
+        for child in th.children:
+            walk(child)
+
+    walk(thread)
+    out.sort(key=lambda pair: (pair[0].created is None, pair[0].created or datetime.min))
+    return out
+
     def ordered_children(self) -> list["Task"]:
         """Return children with completed ones first (stable within a level)."""
         return order_tasks(self.children)

@@ -20,3 +20,11 @@
 - [X] feat: a button inside Thread page to create a new one under this.
 - [X] bug: button move allows click with any destination selected,  disable if any destination is selected.
 - [X] feat: AI input text box allways visible, also under a thread page revision, ready to accept inputs.
+- [X] bug: some icons in dark mode generated are invisible.
+- [X] feat: under [
+
+## Personal-Work mode
+
+1 thread
+
+[ ] [![img](http://127.0.0.1:8000/icon/personal/sport)SPORT **all done · 1 sub-thread**](http://127.0.0.1:8000/thread/personal/sport)] a llist of pending task panel visible by [+] button shows ordered from older to new pending task by thread, are linkable to navigate to thread of the task.

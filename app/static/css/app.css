@@ -340,6 +340,71 @@ main {
   text-decoration: none;
 }
 
+/* Card + pending-tasks peek panel. */
+.card-wrap {
+  position: relative;
+}
+
+.pending-toggle {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+
+.pending-toggle:hover {
+  background: var(--hover-bg);
+  color: var(--text-main);
+}
+
+.pending-panel {
+  margin-top: 0.35rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+
+.pending-panel[hidden] {
+  display: none;
+}
+
+.pending-panel ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pending-panel li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.pending-panel li:last-child {
+  border-bottom: none;
+}
+
+.pending-link {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .card .icon {
   width: 42px;
   height: 42px;
@@ -351,6 +416,14 @@ main {
   color: #fff;
   font-size: 1rem;
   object-fit: cover;
+}
+
+/* Generated icons render on a constant light chip so images with transparent
+ * or dark content stay visible in dark mode. */
+img.icon {
+  background: #fff;
+  object-fit: contain;
+  padding: 3px;
 }
 
 .card .meta {

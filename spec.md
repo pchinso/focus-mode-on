@@ -261,9 +261,15 @@ focus-mode-on/
 
 - **Function**: one semantically relevant icon/image per thread.
 - **Input**: thread title + description. **Output**: `icon.png` in the thread
-  folder + frontmatter reference. **Dependencies**: OpenAI image API.
-- **Pending**: style prompt so icons look like one coherent set; fallback
-  glyph rendering.
+  folder + frontmatter reference (downscaled to 256 px). **Dependencies**:
+  OpenAI image API, Pillow.
+- **Runs in the background**: when the user approves a thread-creating action,
+  the `/apply` response returns immediately and the icon is generated **as a
+  background task** (FastAPI `BackgroundTasks`), so approval never blocks on the
+  image call. Until the icon lands the thread shows its fallback glyph; the
+  icon appears on a later refresh. The frontmatter write is serialized under
+  the vault lock so it is safe from the background thread.
+- **Pending**: style prompt so icons look like one coherent set.
 
 ### 5.4 Renderer / UI (`app/templates/`, `app/static/`)
 

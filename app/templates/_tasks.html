@@ -41,14 +41,43 @@
     <span class="pill subtle" title="subtasks">{{ child_count }}</span>
     {% endif %}
 
-    <button
-      class="add-sub"
-      type="button"
-      data-add-sub
-      aria-label="Add subtask"
-      title="Add subtask"
-    >＋</button>
+    <span class="task-controls">
+      <button
+        class="row-btn"
+        type="button"
+        data-rename
+        aria-label="Rename task"
+        title="Rename"
+      >✎</button>
+      <button
+        class="row-btn"
+        type="button"
+        data-add-sub
+        aria-label="Add subtask"
+        title="Add subtask"
+      >＋</button>
+      <button
+        class="row-btn danger"
+        type="button"
+        data-post="/thread/{{ thread_rel }}/delete/{{ path }}"
+        data-swap="#task-list"
+        aria-label="Delete task"
+        title="Delete"
+      >✕</button>
+    </span>
   </div>
+
+  <form
+    class="rename-form"
+    action="/thread/{{ thread_rel }}/rename/{{ path }}"
+    method="post"
+    data-swap="#task-list"
+    hidden
+    style="padding-left: {{ 1.5 + depth * 1.25 }}rem"
+  >
+    <input type="text" name="title" value="{{ task.title }}" autocomplete="off" />
+    <button class="btn" type="submit">Save</button>
+  </form>
 
   <form
     class="subtask-form"

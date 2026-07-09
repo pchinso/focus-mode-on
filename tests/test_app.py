@@ -148,6 +148,21 @@ def test_nested_subtasks_over_http(client):
     assert "data-toggle-collapse" in page.text  # collapse caret present
 
 
+def test_rename_and_delete_task_over_http(client):
+    login(client)
+    approve(client, "create_thread", "work", "EditHttp")
+    client.post("/thread/work/edithttp/task", data={"title": "First"})
+    # Rename it.
+    resp = client.post(
+        "/thread/work/edithttp/rename/0", data={"title": "Renamed"}
+    )
+    assert "Renamed" in resp.text and "First" not in resp.text
+    # Delete it.
+    resp = client.post("/thread/work/edithttp/delete/0")
+    assert "Renamed" not in resp.text
+    assert "No tasks yet" in resp.text
+
+
 def test_complete_and_restore_flow(client):
     login(client)
     # Personal work happens in PERSONAL mode (AI is scoped to the active mode).

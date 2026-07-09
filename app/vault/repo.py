@@ -191,6 +191,26 @@ class VaultRepo:
             self._record(f"Mark task {state} in {thread.rel_path}: {task.title}")
             return thread
 
+    def rename_task(self, rel_path: str, path: list[int], new_title: str) -> Thread:
+        """Rename the task at an index-path, preserving its state and children."""
+        with self._lock:
+            thread = self.get(rel_path)
+            task = _resolve_task(thread.tasks, path)
+            task.title = new_title.strip()
+            write_thread(self.base, thread)
+            self._record(f"Rename task in {thread.rel_path}: {task.title}")
+            return thread
+
+    def delete_task(self, rel_path: str, path: list[int]) -> Thread:
+        """Delete the task (and its subtree) at an index-path."""
+        with self._lock:
+            thread = self.get(rel_path)
+            container, task = _resolve_container(thread.tasks, path)
+            container.remove(task)
+            write_thread(self.base, thread)
+            self._record(f"Delete task in {thread.rel_path}: {task.title}")
+            return thread
+
     def complete_task_by_title(self, rel_path: str, title: str) -> bool:
         """Mark the best-matching pending task (at any depth) as done."""
         with self._lock:
@@ -321,6 +341,27 @@ def _resolve_task(tasks: list[Task], path: list[int]) -> Task:
         level = order_tasks(task.children)
     assert task is not None  # non-empty path guarantees assignment
     return task
+
+
+def _resolve_container(tasks: list[Task], path: list[int]) -> tuple[list[Task], Task]:
+    """Return the real sibling list containing the addressed task, plus the task.
+
+    Unlike :func:`_resolve_task`, this also returns the concrete parent list
+    (``thread.tasks`` or a task's ``children``) so callers can remove/insert.
+    """
+    if not path:
+        raise VaultError("Empty task path")
+    container = tasks
+    task: Task | None = None
+    for depth, index in enumerate(path):
+        ordered = order_tasks(container)
+        if not 0 <= index < len(ordered):
+            raise VaultError(f"Task path out of range: {path}")
+        task = ordered[index]
+        if depth < len(path) - 1:
+            container = task.children
+    assert task is not None
+    return container, task
 
 
 def _all_pending(tasks: list[Task]) -> list[Task]:

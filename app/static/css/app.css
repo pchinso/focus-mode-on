@@ -526,7 +526,19 @@ main {
   padding: 0 0.4rem;
 }
 
-.add-sub {
+.task-controls {
+  display: flex;
+  gap: 0.15rem;
+  opacity: 0;
+}
+
+.task-row:hover .task-controls,
+.task-row:focus-within .task-controls,
+.task-row.kbd-active .task-controls {
+  opacity: 1;
+}
+
+.row-btn {
   border: none;
   background: transparent;
   color: var(--text-soft);
@@ -537,26 +549,27 @@ main {
   height: 22px;
   border-radius: 5px;
   flex: 0 0 22px;
-  opacity: 0;
 }
 
-.task-row:hover .add-sub,
-.task-row:focus-within .add-sub {
-  opacity: 1;
-}
-
-.add-sub:hover {
+.row-btn:hover {
   background: var(--hover-bg);
   color: var(--text-main);
 }
 
-.subtask-form {
+.row-btn.danger:hover {
+  background: var(--light-coral);
+  color: #5a1c1c;
+}
+
+.subtask-form,
+.rename-form {
   display: flex;
   gap: 0.4rem;
   padding: 0.35rem 0.9rem 0.5rem;
 }
 
-.subtask-form input[type="text"] {
+.subtask-form input[type="text"],
+.rename-form input[type="text"] {
   flex: 1;
   padding: 0.4rem 0.6rem;
   border: 1px solid var(--border);
@@ -566,9 +579,11 @@ main {
   font: inherit;
 }
 
-.subtask-form .btn {
+.subtask-form .btn,
+.rename-form .btn {
   padding: 0.35rem 0.7rem;
 }
+
 
 .task-add {
   display: flex;
@@ -835,4 +850,38 @@ kbd {
 
 .overlay td {
   padding: 0.25rem 0.5rem;
+}
+
+/* Responsive: narrow windows / tablets. */
+@media (max-width: 640px) {
+  main {
+    padding: 1rem 0.8rem 3rem;
+  }
+
+  .app-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .app-header nav {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .command-bar {
+    flex-direction: column;
+  }
+
+  .command-side {
+    flex-direction: row;
+  }
+
+  .command-side .btn {
+    flex: 1;
+  }
 }

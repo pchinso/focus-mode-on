@@ -11,4 +11,4 @@
 - [X] feat:  for  upper left home shorcut where the name of app are in text,  create a icon for the app not only text.
 - [ ] git action: merge v1.0 branch to main
 - [X] git action: new branch v1.1
-- [ ] feat: in branch v1.1 implement specs_v11.md features (in progress: Approve/Discard all, dashboard search, command palette Ctrl+K done; rename/reorder/re-parent/delete-undo/edit-before-approve/HTML export/accent colors/regenerate icon/toasts/responsive pending)
+- [ ] feat: in branch v1.1 implement specs_v11.md features (in progress: Approve/Discard all, dashboard search, command palette Ctrl+K, rename task, delete task, responsive layout done; reorder/re-parent/delete-undo/edit-before-approve/HTML export/accent colors/regenerate icon/toasts pending)

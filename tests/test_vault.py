@@ -134,6 +134,23 @@ def test_render_indents_nested_tasks():
     assert "  - [ ] Child" in text  # two-space indent for the child
 
 
+def test_rename_and_delete_task(repo):
+    repo.create_thread("work", "Edit")
+    repo.add_task("work/edit", "Old title")
+    repo.add_task("work/edit", "Child", parent_path=[0])
+    # Rename the top-level task, preserving its subtree.
+    thread = repo.rename_task("work/edit", [0], "New title")
+    top = thread.ordered_tasks()[0]
+    assert top.title == "New title"
+    assert top.children[0].title == "Child"
+    # Delete the nested child.
+    thread = repo.delete_task("work/edit", [0, 0])
+    assert thread.ordered_tasks()[0].children == []
+    # Delete the remaining top-level task.
+    thread = repo.delete_task("work/edit", [0])
+    assert thread.ordered_tasks() == []
+
+
 def test_complete_task_by_title_matches_nested(repo):
     repo.create_thread("work", "Find")
     repo.add_task("work/find", "Top")

@@ -69,6 +69,13 @@
 
 - **App logo**: a vector "focus target" mark in the header and as the favicon
   (delivered in v1.0's tail; formalized here as part of the identity).
+- **Command bar everywhere**: the AI command box is present on every page (not
+  just the dashboard), always ready to accept input — including while viewing a
+  thread — and continues to scope to the active mode.
+- **New sub-thread button**: the thread page has a direct control to create a
+  child thread under the current one (a manual create, no AI round-trip).
+- **Guarded Move control**: the thread "Move to…" re-parent button stays
+  disabled until a real destination is chosen, so it can't submit an empty move.
 - **Denser, calmer dashboard**: consistent card sizing, clearer section
   headers, subtle hover/selection motion (respecting reduced-motion).
 - **Sticky command bar** that collapses to a single line on scroll and expands

@@ -302,10 +302,14 @@ focus-mode-on/
   ingested and the identified actions are placed in a **review queue** shown
   directly under the box — **nothing is applied automatically**. Each queued
   action is enumerated (action, target thread, title/text, confidence badge)
-  and the user must **approve or discard** it: per-action **Discard** removes it
-  from the queue, and **Approve remaining** applies everything still in the
-  queue (then the view refreshes). Out-of-mode actions never enter the queue —
-  they are listed as ignored.
+  and the user must **approve or discard** it. Each queued action has its own
+  **Discard** and **OK** buttons — OK applies just that one action, Discard
+  drops it — and an **Approve remaining** button applies everything still in
+  the queue at once. Example: the note "create main threads BESS, PV" queues
+  two rows — "Create thread BESS" with Discard/OK, and "Create thread PV" with
+  Discard/OK. Once the queue is emptied (all approved or discarded) the view
+  refreshes. Out-of-mode actions never enter the queue — they are listed as
+  ignored.
 - **Thread view**: breadcrumb from root; child threads as cards; a **task
   tree** at the end with completed tasks above pending ones at every level.
   Actions: add task, add subtask (nest under any task), toggle task at any

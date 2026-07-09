@@ -190,6 +190,19 @@ def test_command_box_is_multiline_textarea(client):
     login(client)
     page = client.get("/").text
     assert "<textarea" in page and 'rows="10"' in page and 'id="command-input"' in page
+    # The digestion step only interprets; the loading text must not claim icons.
+    assert "generating any new icon" not in page
+    assert "Thinking" in page
+
+
+def test_command_box_keyboard_reachable_with_tips_and_examples(client):
+    """The box is autofocused; tips and an Examples help button are present."""
+    login(client)
+    page = client.get("/").text
+    assert "autofocus" in page  # reachable on entry (feat 7)
+    assert 'id="command-tips"' in page and 'class="tip"' in page  # tips (feat 8)
+    assert 'data-template="new thread NAME"' in page  # a usable template
+    assert 'id="examples-toggle"' in page  # examples help button (feat 9)
 
 
 def test_work_mode_ignores_personal_input(client):

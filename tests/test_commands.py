@@ -43,6 +43,16 @@ def test_completion_intent_targets_known_thread():
     assert intent.thread_path == "work/website/landing-page"
 
 
+def test_new_thread_recognized_despite_typo():
+    """'new thead DEV' (misspelled) is still a create_thread, not 'nothing'."""
+    layer = make_layer()
+    result = layer.interpret("new thead DEV", [])
+    assert result.intents, "must not be dropped as nothing-to-do"
+    intent = result.intents[0]
+    assert intent.action == "create_thread"
+    assert "dev" in intent.title.lower()
+
+
 def test_default_is_create_task():
     layer = make_layer()
     result = layer.interpret("email the accountant", [])

@@ -137,8 +137,54 @@ main {
   min-height: 2.6rem;
 }
 
-.command-bar .btn {
-  align-self: flex-start;
+.command-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.command-tips {
+  margin: -0.9rem 0 1.5rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.command-tips[hidden] {
+  display: none;
+}
+
+.command-tips .tips-label {
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.command-tips ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.command-tips li {
+  padding: 0.15rem 0;
+}
+
+.command-tips .tip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-link);
+  border-radius: 5px;
+  padding: 0.1rem 0.5rem;
+  font: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.command-tips .tip:hover {
+  background: var(--hover-bg);
 }
 
 .command-bar textarea:focus,
@@ -673,10 +719,21 @@ kbd {
   font-size: 0.8rem;
 }
 
-/* Keyboard-focused element highlight. */
+/* Keyboard-focused element highlight — deliberately high-contrast so the
+ * selected position is obvious on any background (light or dark): a filled
+ * highlight, a left accent bar, and a solid ring. */
 .kbd-active {
-  outline: 2px solid var(--focus-ring) !important;
-  outline-offset: 2px;
+  background: var(--select-bg) !important;
+  box-shadow:
+    inset 4px 0 0 0 var(--water-turquoise),
+    0 0 0 2px var(--water-turquoise) !important;
+  border-radius: 8px;
+  outline: none !important;
+}
+
+.kbd-active .label,
+.kbd-active .name {
+  color: var(--text-main) !important;
 }
 
 /* Shortcut help overlay. */

@@ -28,7 +28,15 @@ provided tree). For create_thread, "thread_path" must be the PARENT under which 
 to create the thread (a root like "work"/"personal" or an existing thread \
 path) — do NOT include the new thread's own name in it; the new name goes only \
 in "title". "title" is the task text or new thread title. "confidence" is \
-0..1. Only include intents clearly implied by the note."""
+0..1.
+Any request to make/start/create a new thread, project, initiative, or area — \
+even if terse or misspelled — MUST produce a create_thread. Read obvious typos \
+generously: "thead"/"thread"/"projekt" all mean thread/project. A short list of \
+names creates one thread per name. Examples:
+- "new thread DEV" -> [{"action":"create_thread","thread_path":"work","title":"DEV","confidence":0.9}]
+- "new thead DEV" -> [{"action":"create_thread","thread_path":"work","title":"DEV","confidence":0.85}]
+- "create main threads BESS, PV" -> two create_thread intents titled "BESS" and "PV".
+Only omit an intent when the note truly implies no action."""
 
 
 @dataclass
@@ -179,7 +187,11 @@ def _intent_from_dict(d: dict) -> Intent | None:
 # -- Local heuristic fallback ---------------------------------------------
 
 _DONE_WORDS = re.compile(r"\b(done|finished|completed|complete)\b", re.I)
-_NEW_THREAD = re.compile(r"\b(new|start|create)\b.*\b(project|initiative|thread)\b", re.I)
+# Tolerate common typos of "thread" (e.g. "thead") and synonyms.
+_NEW_THREAD = re.compile(
+    r"\b(new|start|create|make|add)\b.*\b(project|initiative|thr?ead|area|topic)\b",
+    re.I,
+)
 
 
 def _heuristic(
@@ -222,7 +234,8 @@ def _guess_path(text: str, tree_paths: list[str]) -> str | None:
 def _strip_keywords(text: str) -> str:
     """Remove new-thread trigger words to recover a plausible title."""
     cleaned = re.sub(
-        r"\b(new|start|create|a|the|work|personal|project|initiative|thread|called|named)\b",
+        r"\b(new|start|create|make|add|a|the|work|personal|project|initiative"
+        r"|thr?ead|area|topic|called|named)\b",
         " ",
         text,
         flags=re.I,

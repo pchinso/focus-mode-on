@@ -178,6 +178,38 @@
     resolveQueueRow(item, true);
   });
 
+  // Command tips: hide once the user starts typing; the Examples button and
+  // clicking a tip toggle/insert them.
+  function syncTips() {
+    const ta = document.getElementById("command-input");
+    const tips = document.getElementById("command-tips");
+    if (!ta || !tips) return;
+    tips.hidden = ta.value.trim().length > 0;
+  }
+
+  document.addEventListener("input", (ev) => {
+    if (ev.target && ev.target.id === "command-input") syncTips();
+  });
+
+  document.addEventListener("click", (ev) => {
+    if (ev.target.closest("#examples-toggle")) {
+      ev.preventDefault();
+      const tips = document.getElementById("command-tips");
+      if (tips) tips.hidden = !tips.hidden;
+      return;
+    }
+    const tip = ev.target.closest(".tip");
+    if (tip) {
+      ev.preventDefault();
+      const ta = document.getElementById("command-input");
+      if (ta) {
+        ta.value = tip.getAttribute("data-template") || tip.textContent.trim();
+        ta.focus();
+        syncTips();
+      }
+    }
+  });
+
   // Ctrl/Cmd+Enter submits the multi-line command box (plain Enter = newline).
   document.addEventListener("keydown", (ev) => {
     if (ev.key !== "Enter" || !(ev.ctrlKey || ev.metaKey)) return;

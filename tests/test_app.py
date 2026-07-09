@@ -148,6 +148,16 @@ def test_nested_subtasks_over_http(client):
     assert "data-toggle-collapse" in page.text  # collapse caret present
 
 
+def test_pending_task_shows_age(client):
+    """A pending task displays its age based on creation time."""
+    login(client)
+    approve(client, "create_thread", "work", "Aged")
+    client.post("/thread/work/aged/task", data={"title": "Recent"})
+    page = client.get("/thread/work/aged").text
+    assert 'class="age' in page  # age badge rendered
+    assert "ago" in page or "just now" in page
+
+
 def test_reparent_thread_over_http(client):
     login(client)
     approve(client, "create_thread", "work", "Parent")

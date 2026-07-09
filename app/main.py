@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 
@@ -22,7 +23,7 @@ from .ai.commands import AICommandLayer, Intent
 from .ai.icons import IconGenerator
 from .auth import SESSION_COOKIE, Auth
 from .config import load_settings
-from .vault.model import ARCHIVE_DIR, ROOTS, slugify
+from .vault.model import ARCHIVE_DIR, ROOTS, human_age, is_stale, slugify
 from .vault.repo import VaultError, VaultRepo
 
 MODE_COOKIE = "focus_mode"
@@ -39,6 +40,9 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 templates.env.globals["app_version"] = __version__
 templates.env.globals["ROOTS"] = ROOTS
+templates.env.globals["now"] = datetime.now
+templates.env.globals["human_age"] = human_age
+templates.env.globals["is_stale"] = is_stale
 
 repo = VaultRepo(settings.vault_dir)
 auth = Auth(settings.password, settings.secret_key)

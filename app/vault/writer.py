@@ -63,13 +63,21 @@ def _render_tasks(tasks: list[Task], depth: int, lines: list[str]) -> None:
     """
     indent = "  " * depth
     for task in order_tasks(tasks):
-        if task.done:
-            stamp = f" ✅ {task.completed.isoformat()}" if task.completed else ""
-            lines.append(f"{indent}- [x] {task.title}{stamp}")
-        else:
-            lines.append(f"{indent}- [ ] {task.title}")
+        mark = "x" if task.done else " "
+        created = f" ➕ {_fmt_created(task.created)}" if task.created else ""
+        done_stamp = (
+            f" ✅ {task.completed.isoformat()}" if task.done and task.completed else ""
+        )
+        lines.append(f"{indent}- [{mark}] {task.title}{created}{done_stamp}")
         if task.children:
             _render_tasks(task.children, depth + 1, lines)
+
+
+def _fmt_created(value) -> str:
+    """Format a creation timestamp: date only at midnight, else ISO minutes."""
+    if value.hour == 0 and value.minute == 0:
+        return value.date().isoformat()
+    return value.strftime("%Y-%m-%dT%H:%M")
 
 
 def write_thread(base: Path, thread: Thread) -> Path:

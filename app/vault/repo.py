@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import shutil
 import threading
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 from . import sync
@@ -36,11 +36,13 @@ class VaultRepo:
     Args:
         base: Absolute path to the vault directory.
         today: Callable returning the current date (injectable for tests).
+        now: Callable returning the current datetime (injectable for tests).
     """
 
-    def __init__(self, base: Path, today=date.today) -> None:
+    def __init__(self, base: Path, today=date.today, now=datetime.now) -> None:
         self.base = Path(base)
         self._today = today
+        self._now = now
         self._lock = threading.RLock()
         self.base.mkdir(parents=True, exist_ok=True)
         for root in ROOTS:
@@ -155,7 +157,7 @@ class VaultRepo:
         """
         with self._lock:
             thread = self.get(rel_path)
-            new_task = Task(title=title.strip(), done=False)
+            new_task = Task(title=title.strip(), done=False, created=self._now())
             if parent_path:
                 parent = _resolve_task(thread.tasks, parent_path)
                 parent.children.append(new_task)

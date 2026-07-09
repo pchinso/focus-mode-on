@@ -34,6 +34,11 @@
 
     {% if task.done and task.completed %}
     <span class="date">{{ task.completed.isoformat() }}</span>
+    {% elif not task.done and task.created %}
+    <span
+      class="age {{ 'old' if is_stale(task.created, now()) else '' }}"
+      title="Created {{ task.created.strftime('%Y-%m-%d %H:%M') }}"
+    >{{ human_age(task.created, now()) }}</span>
     {% endif %}
 
     {% set child_count = task.children | length %}

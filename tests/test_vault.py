@@ -134,6 +134,33 @@ def test_render_indents_nested_tasks():
     assert "  - [ ] Child" in text  # two-space indent for the child
 
 
+def test_task_records_creation_time_and_round_trips(tmp_path):
+    from datetime import datetime as _dt
+
+    fixed_now = _dt(2026, 7, 9, 12, 0)
+    r = VaultRepo(tmp_path, today=lambda: FIXED, now=lambda: fixed_now)
+    r.create_thread("work", "Age")
+    r.add_task("work/age", "Fresh task")
+    t = r.get("work/age").ordered_tasks()[0]
+    assert t.created == fixed_now  # stamped on creation
+    # Survives a reload from disk (➕ stamp round-trips).
+    assert r.get("work/age").ordered_tasks()[0].created == fixed_now
+
+
+def test_human_age_formatting():
+    from datetime import datetime as _dt, timedelta
+
+    from app.vault.model import human_age, is_stale
+
+    now = _dt(2026, 7, 9, 12, 0)
+    assert human_age(now - timedelta(hours=2), now) == "2h ago"
+    assert human_age(now - timedelta(days=3), now) == "3 days ago"
+    assert human_age(now - timedelta(days=7), now) == "1 week ago"
+    assert human_age(None, now) == ""
+    assert is_stale(now - timedelta(days=20), now) is True
+    assert is_stale(now - timedelta(days=2), now) is False
+
+
 def test_move_thread_reparents(repo, tmp_path):
     repo.create_thread("work", "Alpha")
     repo.create_thread("work", "Beta")

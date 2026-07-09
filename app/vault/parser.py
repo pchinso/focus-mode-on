@@ -18,6 +18,10 @@ _TASK_RE = re.compile(
 )
 # Trailing completion stamp appended to done tasks, e.g. "✅ 2026-07-08".
 _DONE_STAMP_RE = re.compile(r"\s*✅\s*(?P<d>\d{4}-\d{2}-\d{2})\s*$")
+# Creation stamp (Obsidian ➕), a date or an ISO-minute datetime.
+_CREATED_STAMP_RE = re.compile(
+    r"\s*➕\s*(?P<c>\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2})?)"
+)
 
 
 def _parse_date(value: object) -> date | None:
@@ -90,11 +94,26 @@ def _parse_task(match: re.Match[str]) -> Task:
     done = match.group("mark").lower() == "x"
     body = match.group("body")
     completed: date | None = None
-    stamp = _DONE_STAMP_RE.search(body)
-    if stamp:
-        completed = _parse_date(stamp.group("d"))
+    created: datetime | None = None
+    done_stamp = _DONE_STAMP_RE.search(body)
+    if done_stamp:
+        completed = _parse_date(done_stamp.group("d"))
         body = _DONE_STAMP_RE.sub("", body).strip()
-    return Task(title=body.strip(), done=done, completed=completed)
+    created_stamp = _CREATED_STAMP_RE.search(body)
+    if created_stamp:
+        created = _parse_created(created_stamp.group("c"))
+        body = _CREATED_STAMP_RE.sub("", body).strip()
+    return Task(title=body.strip(), done=done, completed=completed, created=created)
+
+
+def _parse_created(value: str) -> datetime | None:
+    """Parse a created stamp (date or ISO-minute datetime) into a datetime."""
+    try:
+        if "T" in value:
+            return datetime.fromisoformat(value)
+        return datetime.fromisoformat(value + "T00:00")
+    except ValueError:
+        return None
 
 
 def parse_thread_file(md_path: Path, rel_path: str) -> Thread:

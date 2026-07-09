@@ -9,7 +9,7 @@ parser and writer modules convert between these and on-disk Markdown.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime
 
 
 THREAD_FILE = "thread.md"
@@ -29,18 +29,62 @@ class Task:
         title: Human-readable task text.
         done: Whether the task is completed.
         completed: Completion date, set when ``done`` is True.
+        created: Creation timestamp, if recorded (Obsidian ``➕`` stamp).
         children: Nested subtasks (may be arbitrarily deep).
     """
 
     title: str
     done: bool = False
     completed: date | None = None
+    created: datetime | None = None
     children: list["Task"] = field(default_factory=list)
 
     @property
     def has_children(self) -> bool:
         """True when this task has at least one subtask."""
         return bool(self.children)
+
+    def ordered_children(self) -> list["Task"]:
+        """Return children with completed ones first (stable within a level)."""
+        return order_tasks(self.children)
+
+
+def human_age(created: datetime | None, now: datetime) -> str:
+    """Return a short human age like "2h ago" or "7 days ago".
+
+    Args:
+        created: Task creation timestamp, or None.
+        now: Current time.
+
+    Returns:
+        A compact relative-age string, or "" when ``created`` is unknown.
+    """
+    if created is None:
+        return ""
+    seconds = max(0, int((now - created).total_seconds()))
+    minutes = seconds // 60
+    hours = minutes // 60
+    days = hours // 24
+    if minutes < 1:
+        return "just now"
+    if minutes < 60:
+        return f"{minutes}m ago"
+    if hours < 24:
+        return f"{hours}h ago"
+    if days < 7:
+        return f"{days} day{'s' if days != 1 else ''} ago"
+    if days < 35:
+        weeks = days // 7
+        return f"{weeks} week{'s' if weeks != 1 else ''} ago"
+    months = days // 30
+    return f"{months} month{'s' if months != 1 else ''} ago"
+
+
+def is_stale(created: datetime | None, now: datetime, days: int = 14) -> bool:
+    """True when a task is older than ``days`` (used to emphasize old items)."""
+    if created is None:
+        return False
+    return (now - created).days >= days
 
     def ordered_children(self) -> list["Task"]:
         """Return children with completed ones first (stable within a level)."""

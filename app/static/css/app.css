@@ -564,6 +564,18 @@ main {
   flex: 0 0 auto;
 }
 
+.task-row .age {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.task-row .age.old {
+  color: var(--dark-coral);
+  font-weight: 600;
+}
+
 .pill.subtle {
   font-size: 0.7rem;
   padding: 0 0.4rem;

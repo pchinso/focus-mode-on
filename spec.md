@@ -299,10 +299,13 @@ focus-mode-on/
   **multi-line text box (10 rows)** so longer notes can be composed and read at
   once; it grows/scrolls beyond 10 lines. `Enter` inserts a newline;
   **`Ctrl`/`Cmd`+`Enter`** (or the Run button) submits. On submit the note is
-  ingested and a **list of the identified actions** is shown directly under the
-  box: each parsed intent is enumerated (action, target thread, and title/text,
-  with a confidence badge), followed by which were applied, which need
-  confirmation, and which were ignored as out-of-mode.
+  ingested and the identified actions are placed in a **review queue** shown
+  directly under the box — **nothing is applied automatically**. Each queued
+  action is enumerated (action, target thread, title/text, confidence badge)
+  and the user must **approve or discard** it: per-action **Discard** removes it
+  from the queue, and **Approve remaining** applies everything still in the
+  queue (then the view refreshes). Out-of-mode actions never enter the queue —
+  they are listed as ignored.
 - **Thread view**: breadcrumb from root; child threads as cards; a **task
   tree** at the end with completed tasks above pending ones at every level.
   Actions: add task, add subtask (nest under any task), toggle task at any

@@ -251,9 +251,14 @@ focus-mode-on/
 
 - **Function**: turn free-form user text into vault operations.
 - **Logic**: prompt with the current thread tree as context; OpenAI
-  structured output per the contract in §4.3; low-confidence intents require
-  confirmation; every applied change is reported back in the UI.
-- **Input**: user text + thread tree. **Output**: applied intents + summary.
+  structured output per the contract in §4.3; identified actions are queued for
+  approval (§6); every applied change is reported back in the UI.
+- **Create-thread recognition**: an explicit request to make a new
+  thread/project/area — e.g. "new thread DEV", "create BESS", or the misspelled
+  "new thead DEV" — must reliably yield a `create_thread` intent with that
+  name; the prompt carries examples and the local heuristic tolerates common
+  typos so such a note is never dropped as "nothing to do".
+- **Input**: user text + thread tree. **Output**: queued intents + summary.
 - **Dependencies**: `openai` SDK, `OPENAI_API_KEY`. **Pending**: prompt
   design, confidence-threshold tuning.
 
@@ -304,9 +309,11 @@ focus-mode-on/
   **command bar** (focused with `/`) accepts natural-language input. It is a
   **multi-line text box (10 rows)** so longer notes can be composed and read at
   once; it grows/scrolls beyond 10 lines. `Enter` inserts a newline;
-  **`Ctrl`/`Cmd`+`Enter`** (or the Run button) submits. On submit the note is
-  ingested and the identified actions are placed in a **review queue** shown
-  directly under the box — **nothing is applied automatically**. Each queued
+  **`Ctrl`/`Cmd`+`Enter`** (or the Run button) submits. While interpreting, a
+  brief "Thinking…" indicator shows — this step only parses the note (no thread
+  creation or icon work happens here). On submit the note is ingested and the
+  identified actions are placed in a **review queue** shown directly under the
+  box — **nothing is applied automatically**. Each queued
   action is enumerated (action, target thread, title/text, confidence badge)
   and the user must **approve or discard** it. Each queued action has its own
   **Discard** and **OK** buttons — OK applies just that one action, Discard
@@ -333,8 +340,10 @@ focus-mode-on/
   collapse/expand a task's subtree, `s` to add a subtask under the focused
   task, `/` command bar, `a` add task, `c` complete thread, `m` switch
   WORK/PERSONAL mode, `u` restore, `?` shortcut help overlay, `Esc` back.
-  Every interactive element reachable without a mouse; visible focus ring from
-  theme tokens.
+  Every interactive element reachable without a mouse. The **currently selected
+  item is clearly highlighted** — not just a thin outline (which can wash out
+  against some backgrounds) but a filled highlight background plus a
+  high-contrast ring/accent bar, legible in both light and dark modes.
 - **Header**: Cox gradient, app name, WORK/PERSONAL mode switch, light/dark
   toggle, logout.
 - **Help/About**: shortcut list, version, vault sync status.

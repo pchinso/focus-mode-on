@@ -21,10 +21,6 @@
 - [X] bug: button move allows click with any destination selected,  disable if any destination is selected.
 - [X] feat: AI input text box allways visible, also under a thread page revision, ready to accept inputs.
 - [X] bug: some icons in dark mode generated are invisible.
-- [X] feat: under [
-
-## Personal-Work mode
-
-1 thread
-
-[ ] [![img](http://127.0.0.1:8000/icon/personal/sport)SPORT **all done · 1 sub-thread**](http://127.0.0.1:8000/thread/personal/sport)] a llist of pending task panel visible by [+] button shows ordered from older to new pending task by thread, are linkable to navigate to thread of the task.
+- [X] feat: under [Personal-Work mode1 thread[ ] [![img](http://127.0.0.1:8000/icon/personal/sport)SPORT **all done · 1 sub-thread**](http://127.0.0.1:8000/thread/personal/sport)] a llist of pending task panel visible by [+] button shows ordered from older to new pending task by thread, are linkable to navigate to thread of the task.
+- [X] bug: list of pending task panel visible by [+] button shows ordered from older to new pending task by thread, are linkable to navigate to thread of the task. **Only works in Personal mode?!! check for both!**
+- [X] feat:  improve app, Responsiveness, [Make this app fully responsive and adaptive for multiple screen sizes and devices, including mobile phones, tablets, laptops, desktops, and large displays. Ensure that the layout automatically adjusts to different resolutions and orientations without breaking the design. Use flexible grids, scalable components, responsive typography, proper spacing, and adaptive navigation.The app should provide a smooth and consistent user experience across all screen formats. Avoid fixed widths when possible, prevent overflow issues, and make sure buttons, menus, forms, images, and content remain clear, usable, and accessible on every device. Optimize the UI for both touch and mouse interactions, and follow modern responsive design best practices.]

@@ -38,7 +38,12 @@
     <ul>
       {% for task, owner in pend %}
       <li>
-        <a href="/thread/{{ owner }}" class="pending-link">{{ task.title }}</a>
+        <a href="/thread/{{ owner }}" class="pending-link">
+          <span class="pending-title">{{ task.title }}</span>
+          {% if owner != thread.rel_path %}
+          <span class="pending-thread">{{ owner.split('/')[-1].replace('-', ' ') }}</span>
+          {% endif %}
+        </a>
         {% if task.created %}
         <span class="age {{ 'old' if is_stale(task.created, now()) else '' }}">{{ human_age(task.created, now()) }}</span>
         {% endif %}

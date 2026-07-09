@@ -400,9 +400,26 @@ main {
 .pending-link {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  overflow: hidden;
+}
+
+.pending-title {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.pending-thread {
+  flex: 0 0 auto;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 0.4rem;
 }
 
 .card .icon {
@@ -1081,8 +1098,63 @@ kbd {
   padding: 0.25rem 0.5rem;
 }
 
-/* Responsive: narrow windows / tablets. */
-@media (max-width: 640px) {
+/* ============================================================
+ * Responsive & adaptive — phones, tablets, laptops, desktops,
+ * large displays; touch and mouse.
+ * ============================================================ */
+
+/* Fluid base: never overflow, wrap long words, scale media. */
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+.result,
+.pending-panel,
+.command-tips,
+.breadcrumb {
+  overflow-wrap: break-word;
+}
+
+/* Scalable typography. */
+.app-header .brand {
+  font-size: clamp(1rem, 1rem + 0.6vw, 1.15rem);
+}
+
+.thread-head h1 {
+  font-size: clamp(1.2rem, 1rem + 2.5vw, 1.5rem);
+}
+
+/* Large displays: use more of the width. */
+@media (min-width: 1400px) {
+  main {
+    max-width: 1180px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+/* Tablets / small laptops. */
+@media (max-width: 900px) {
+  main {
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  .thread-head {
+    flex-wrap: wrap;
+  }
+
+  .thread-actions {
+    flex-wrap: wrap;
+  }
+}
+
+/* Phones. */
+@media (max-width: 600px) {
   main {
     padding: 1rem 0.8rem 3rem;
   }
@@ -1090,12 +1162,14 @@ kbd {
   .app-header {
     flex-wrap: wrap;
     gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
   }
 
   .app-header nav {
     width: 100%;
     margin-left: 0;
     flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   .cards {
@@ -1112,5 +1186,53 @@ kbd {
 
   .command-side .btn {
     flex: 1;
+  }
+
+  .thread-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .new-sub-form,
+  .move-form {
+    width: 100%;
+  }
+
+  .new-sub-form input,
+  .move-select {
+    flex: 1;
+    max-width: none;
+  }
+
+  /* Comfortable touch targets. */
+  .btn,
+  .mode-btn {
+    min-height: 42px;
+  }
+
+  .row-btn,
+  .pending-toggle,
+  .swatch {
+    min-width: 34px;
+    min-height: 34px;
+  }
+
+  /* Prevent iOS auto-zoom on focus (needs >=16px). */
+  .command-bar textarea,
+  .q-edit,
+  .dashboard-search,
+  .task-add input,
+  .subtask-form input,
+  .rename-form input,
+  #palette-input {
+    font-size: 16px;
+  }
+}
+
+/* Touch devices: reveal hover-only affordances so they are usable. */
+@media (hover: none) {
+  .task-controls,
+  .pending-toggle {
+    opacity: 1;
   }
 }

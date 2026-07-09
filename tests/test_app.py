@@ -162,6 +162,25 @@ def test_card_pending_panel_lists_tasks_oldest_first(client):
     assert '/thread/work/proj" class="pending-link"' in page
 
 
+def test_pending_panel_works_in_both_modes(client):
+    """v1.1 bug fix: the card pending panel renders in WORK and PERSONAL."""
+    login(client)
+    # WORK thread with a pending task.
+    approve(client, "create_thread", "work", "WorkProj")
+    client.post("/thread/work/workproj/task", data={"title": "Work pending"})
+    # PERSONAL thread with a pending task.
+    client.post("/mode/personal")
+    approve(client, "create_thread", "personal", "Sport")
+    client.post("/thread/personal/sport/task", data={"title": "Personal pending"})
+
+    personal = client.get("/").text  # still in personal mode
+    assert "pending-toggle" in personal and "Personal pending" in personal
+
+    client.post("/mode/work")
+    work = client.get("/").text
+    assert "pending-toggle" in work and "Work pending" in work
+
+
 def test_generated_icon_has_light_chip_css(client):
     """v1.1: img icons get a constant light chip so dark-mode icons stay visible."""
     login(client)

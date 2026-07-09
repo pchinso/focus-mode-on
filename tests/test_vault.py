@@ -134,6 +134,29 @@ def test_render_indents_nested_tasks():
     assert "  - [ ] Child" in text  # two-space indent for the child
 
 
+def test_move_task_reorders_within_group(repo):
+    repo.create_thread("work", "Order")
+    repo.add_task("work/order", "A")
+    repo.add_task("work/order", "B")
+    repo.add_task("work/order", "C")
+    # All pending -> display order A, B, C. Move C (index 2) up.
+    thread = repo.move_task("work/order", [2], -1)
+    titles = [t.title for t in thread.ordered_tasks()]
+    assert titles == ["A", "C", "B"]
+    # Move A down.
+    thread = repo.move_task("work/order", [0], +1)
+    assert [t.title for t in thread.ordered_tasks()] == ["C", "A", "B"]
+
+
+def test_set_accent_round_trips(repo, tmp_path):
+    repo.create_thread("work", "Colorful")
+    repo.set_accent("work/colorful", "#2cb8c7")
+    assert repo.get("work/colorful").accent == "#2cb8c7"
+    # Clearing removes it.
+    repo.set_accent("work/colorful", None)
+    assert repo.get("work/colorful").accent is None
+
+
 def test_rename_and_delete_task(repo):
     repo.create_thread("work", "Edit")
     repo.add_task("work/edit", "Old title")

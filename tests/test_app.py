@@ -148,6 +148,26 @@ def test_nested_subtasks_over_http(client):
     assert "data-toggle-collapse" in page.text  # collapse caret present
 
 
+def test_move_and_accent_over_http(client):
+    login(client)
+    approve(client, "create_thread", "work", "Reorder")
+    client.post("/thread/work/reorder/task", data={"title": "A"})
+    client.post("/thread/work/reorder/task", data={"title": "B"})
+    # Move B (index 1) up above A.
+    resp = client.post(
+        "/thread/work/reorder/move/1", data={"direction": "up"}
+    )
+    assert resp.text.index("B") < resp.text.index("A")
+    # Set an accent color; the thread page reflects it.
+    r = client.post(
+        "/accent/work/reorder", data={"color": "#ed696a"}, follow_redirects=False
+    )
+    assert r.status_code == 303
+    page = client.get("/thread/work/reorder").text
+    assert "#ed696a" in page  # accent applied to the glyph
+    assert "accent-picker" in page
+
+
 def test_thread_html_report(client):
     """v1.1: a self-contained themed HTML report of a thread."""
     login(client)

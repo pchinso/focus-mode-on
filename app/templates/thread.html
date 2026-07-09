@@ -18,9 +18,7 @@
   {% if thread.icon %}
   <img class="icon" src="/icon/{{ thread.rel_path }}" alt="" />
   {% else %}
-  <span
-    class="icon"
-    style="background: {% if thread.root == 'work' %}var(--accent-work){% else %}var(--accent-personal){% endif %}"
+  <span class="icon" style="background: {{ ui.glyph_color(thread) }}"
     >{{ ui.initials(thread.title) }}</span
   >
   {% endif %}
@@ -40,6 +38,27 @@
       </button>
     </form>
   </div>
+</div>
+
+<div class="accent-picker">
+  <span class="accent-label">Accent:</span>
+  {% set swatches = ['#283198', '#2cb8c7', '#ed696a', '#11717b', '#a13838', '#43464f'] %}
+  {% for c in swatches %}
+  <form action="/accent/{{ thread.rel_path }}" method="post" class="accent-form">
+    <input type="hidden" name="color" value="{{ c }}" />
+    <button
+      type="submit"
+      class="swatch {{ 'sel' if thread.accent == c else '' }}"
+      style="background: {{ c }}"
+      title="Set accent {{ c }}"
+      aria-label="Set accent {{ c }}"
+    ></button>
+  </form>
+  {% endfor %}
+  <form action="/accent/{{ thread.rel_path }}" method="post" class="accent-form">
+    <input type="hidden" name="color" value="" />
+    <button type="submit" class="swatch clear" title="Clear accent" aria-label="Clear accent">✕</button>
+  </form>
 </div>
 
 {% if thread.description %}

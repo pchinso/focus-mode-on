@@ -36,6 +36,9 @@ def render_thread(thread: Thread) -> str:
     lines.append(f"completed: {_fmt_date(thread.completed)}")
     if thread.icon:
         lines.append(f"icon: {thread.icon}")
+    if thread.accent:
+        # Quote: a bare "#..." would be a YAML comment and get dropped.
+        lines.append(f'accent: "{thread.accent}"')
     lines.append("---")
     lines.append("")
     lines.append(f"# {thread.title}")

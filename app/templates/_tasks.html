@@ -45,6 +45,24 @@
       <button
         class="row-btn"
         type="button"
+        data-post="/thread/{{ thread_rel }}/move/{{ path }}"
+        data-fields="direction=up"
+        data-swap="#task-list"
+        aria-label="Move up"
+        title="Move up"
+      >▲</button>
+      <button
+        class="row-btn"
+        type="button"
+        data-post="/thread/{{ thread_rel }}/move/{{ path }}"
+        data-fields="direction=down"
+        data-swap="#task-list"
+        aria-label="Move down"
+        title="Move down"
+      >▼</button>
+      <button
+        class="row-btn"
+        type="button"
         data-rename
         aria-label="Rename task"
         title="Rename"

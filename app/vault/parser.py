@@ -119,6 +119,7 @@ def parse_thread_file(md_path: Path, rel_path: str) -> Thread:
         created=_parse_date(meta.get("created")),
         completed=_parse_date(meta.get("completed")),
         icon=(str(meta["icon"]) if meta.get("icon") else None),
+        accent=(str(meta["accent"]) if meta.get("accent") else None),
         tasks=tasks,
     )
 

@@ -81,6 +81,7 @@ class Thread:
         created: Creation date.
         completed: Completion date, set when the thread is archived.
         icon: Relative icon filename inside the thread folder, if any.
+        accent: Optional hex accent color for this thread's identity.
         tasks: Checklist items. Completed tasks are listed before pending ones.
         children: Child threads, loaded lazily by the parser.
     """
@@ -92,6 +93,7 @@ class Thread:
     created: date | None = None
     completed: date | None = None
     icon: str | None = None
+    accent: str | None = None
     tasks: list[Task] = field(default_factory=list)
     children: list["Thread"] = field(default_factory=list)
 

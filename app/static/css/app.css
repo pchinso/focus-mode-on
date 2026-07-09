@@ -409,6 +409,49 @@ main {
   margin: 0 0 1.5rem;
 }
 
+/* Per-thread accent picker. */
+.accent-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 1.25rem;
+  flex-wrap: wrap;
+}
+
+.accent-picker .accent-label {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  margin-right: 0.2rem;
+}
+
+.accent-form {
+  margin: 0;
+  display: inline;
+}
+
+.swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.7rem;
+}
+
+.swatch.sel {
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.swatch.clear {
+  background: var(--surface-alt);
+  color: var(--text-soft);
+}
+
 /* Task tree. */
 .tasks {
   list-style: none;

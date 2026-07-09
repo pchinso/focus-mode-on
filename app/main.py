@@ -8,6 +8,7 @@ local heuristic when no OpenAI key is configured.
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 
 from fastapi import BackgroundTasks, Depends, FastAPI, Form, HTTPException, Request
@@ -263,6 +264,24 @@ async def delete_task(request: Request, rel_path: str, task_path: str) -> Respon
     return templates.TemplateResponse(request, "_tasks.html", {"thread": thread})
 
 
+@app.post(
+    "/thread/{rel_path:path}/move/{task_path}",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_login)],
+)
+async def move_task(
+    request: Request, rel_path: str, task_path: str, direction: str = Form("up")
+) -> Response:
+    """Move a task up/down among its siblings; returns the task-list partial."""
+    delta = -1 if direction == "up" else 1
+    try:
+        repo.move_task(rel_path, _parse_task_path(task_path), delta)
+    except VaultError:
+        raise HTTPException(status_code=400, detail="Invalid task")
+    thread = repo.get(rel_path)
+    return templates.TemplateResponse(request, "_tasks.html", {"thread": thread})
+
+
 def _parse_task_path(raw: str) -> list[int]:
     """Parse a dotted index-path like ``0.2.1`` into ``[0, 2, 1]``.
 
@@ -299,6 +318,19 @@ async def restore_thread(rel_path: str) -> Response:
     except VaultError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return RedirectResponse("/archive", status_code=303)
+
+
+@app.post("/accent/{rel_path:path}", dependencies=[Depends(require_login)])
+async def set_accent(rel_path: str, color: str = Form("")) -> Response:
+    """Set (or clear) a thread's accent color, then return to its page."""
+    chosen = color.strip() or None
+    if chosen and not re.match(r"^#[0-9a-fA-F]{6}$", chosen):
+        chosen = None
+    try:
+        repo.set_accent(rel_path, chosen)
+    except VaultError:
+        raise HTTPException(status_code=404, detail="Thread not found")
+    return RedirectResponse(f"/thread/{rel_path}", status_code=303)
 
 
 @app.post("/regen-icon/{rel_path:path}", dependencies=[Depends(require_login)])

@@ -191,6 +191,36 @@ class VaultRepo:
             self._record(f"Mark task {state} in {thread.rel_path}: {task.title}")
             return thread
 
+    def move_task(self, rel_path: str, path: list[int], delta: int) -> Thread:
+        """Move a task up (delta -1) or down (delta +1) among its siblings.
+
+        Operates within the same completion group (a pending task cannot move
+        above a completed one, since completed tasks always sort first). A move
+        that would cross that boundary or run off the ends is a no-op.
+        """
+        with self._lock:
+            thread = self.get(rel_path)
+            container, task = _resolve_container(thread.tasks, path)
+            ordered = order_tasks(container)
+            src = path[-1]
+            dst = src + delta
+            if 0 <= dst < len(ordered) and ordered[dst].done == task.done:
+                other = ordered[dst]
+                ci, cj = container.index(task), container.index(other)
+                container[ci], container[cj] = container[cj], container[ci]
+                write_thread(self.base, thread)
+                self._record(f"Reorder task in {thread.rel_path}: {task.title}")
+            return thread
+
+    def set_accent(self, rel_path: str, accent: str | None) -> Thread:
+        """Set (or clear) a thread's accent color in its frontmatter."""
+        with self._lock:
+            thread = self.get(rel_path)
+            thread.accent = accent or None
+            write_thread(self.base, thread)
+            self._record(f"Set accent {accent} on {thread.rel_path}")
+            return thread
+
     def rename_task(self, rel_path: str, path: list[int], new_title: str) -> Thread:
         """Rename the task at an index-path, preserving its state and children."""
         with self._lock:

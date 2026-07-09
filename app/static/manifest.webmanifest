@@ -1,0 +1,17 @@
+{
+  "name": "Focus Mode On",
+  "short_name": "Focus",
+  "description": "Personal task management over a Markdown vault.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14161f",
+  "theme_color": "#283198",
+  "icons": [
+    {
+      "src": "/static/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

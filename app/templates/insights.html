@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Insights — Focus Mode On{% endblock %}
+
+{% block content %}
+<h1 style="margin-top: 0">Insights</h1>
+<p class="description">A quick read on your work and personal structures.</p>
+
+<div class="insights-grid">
+  {% for s in stats %}
+  <section class="insight-card {{ s.root }}">
+    <h2 class="insight-title">{{ s.title }}</h2>
+    <div class="stat-row">
+      <div class="stat"><span class="stat-num">{{ s.threads }}</span><span class="stat-lbl">threads</span></div>
+      <div class="stat"><span class="stat-num">{{ s.pending }}</span><span class="stat-lbl">pending</span></div>
+      <div class="stat"><span class="stat-num">{{ s.done }}</span><span class="stat-lbl">done</span></div>
+      <div class="stat"><span class="stat-num {{ 'stat-warn' if s.stale }}">{{ s.stale }}</span><span class="stat-lbl">stale</span></div>
+    </div>
+    <div class="completion" title="{{ s.pct }}% complete">
+      <div class="completion-bar" style="width: {{ s.pct }}%"></div>
+    </div>
+    <p class="completion-label">{{ s.pct }}% complete ({{ s.done }}/{{ s.total }})</p>
+    {% if s.total == 0 %}
+    <p class="empty">No tasks yet in {{ s.title }}.</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

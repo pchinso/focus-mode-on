@@ -700,5 +700,14 @@
     });
   });
 
+  // Register the service worker (PWA / installable, offline static shell).
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {
+        /* registration is best-effort */
+      });
+    });
+  }
+
   window.FocusMode = { toggleTheme: toggleTheme };
 })();

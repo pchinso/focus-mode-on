@@ -464,6 +464,32 @@ def test_intent_in_mode_helper():
     assert main._intent_in_mode(Intent("create_thread", "personal", "t"), "work") is True
 
 
+def test_insights_reports_stats(client):
+    """v1.2: the insights page reports per-mode task stats."""
+    login(client)
+    approve(client, "create_thread", "work", "Proj")
+    client.post("/thread/work/proj/task", data={"title": "A"})
+    client.post("/thread/work/proj/task", data={"title": "B"})
+    client.post("/thread/work/proj/toggle/0")  # complete one
+    page = client.get("/insights").text
+    assert "Insights" in page and "% complete" in page
+    assert "completion-bar" in page
+    assert 'href="/insights"' in page
+
+
+def test_pwa_manifest_and_service_worker(client):
+    """v1.2: PWA — manifest is linked/served and the service worker is served."""
+    login(client)
+    page = client.get("/").text
+    assert "manifest.webmanifest" in page and 'name="theme-color"' in page
+    man = client.get("/static/manifest.webmanifest")
+    assert man.status_code == 200 and "standalone" in man.text
+    sw = client.get("/sw.js")
+    assert sw.status_code == 200 and "serviceWorker" not in sw.text
+    assert "javascript" in sw.headers["content-type"]
+    assert sw.headers.get("service-worker-allowed") == "/"
+
+
 def test_due_date_and_agenda(client):
     """v1.2: set a due date and see the task in the right agenda bucket."""
     login(client)

@@ -177,6 +177,44 @@ async def set_mode(mode: str) -> Response:
 
 
 @app.get(
+    "/insights", response_class=HTMLResponse, dependencies=[Depends(require_login)]
+)
+async def insights_view(request: Request) -> Response:
+    """Per-mode stats: threads, pending/done tasks, stale count, completion."""
+    stats = [_mode_stats(root) for root in repo.roots()]
+    return templates.TemplateResponse(request, "insights.html", {"stats": stats})
+
+
+def _mode_stats(root) -> dict:
+    """Aggregate counts for a root and its whole subtree."""
+    now = datetime.now()
+    acc = {"title": root.title, "root": root.rel_path, "threads": 0,
+           "pending": 0, "done": 0, "stale": 0}
+
+    def walk_tasks(tasks) -> None:
+        for t in tasks:
+            if t.done:
+                acc["done"] += 1
+            else:
+                acc["pending"] += 1
+                if is_stale(t.created, now):
+                    acc["stale"] += 1
+            walk_tasks(t.children)
+
+    def walk(node) -> None:
+        for child in node.children:
+            acc["threads"] += 1
+            walk_tasks(child.tasks)
+            walk(child)
+
+    walk(root)
+    total = acc["pending"] + acc["done"]
+    acc["total"] = total
+    acc["pct"] = round(100 * acc["done"] / total) if total else 0
+    return acc
+
+
+@app.get(
     "/search", response_class=HTMLResponse, dependencies=[Depends(require_login)]
 )
 async def search(request: Request, q: str = "") -> Response:
@@ -744,6 +782,17 @@ async def threads_json() -> dict[str, object]:
 
     walk(repo.roots())
     return {"threads": items}
+
+
+@app.get("/sw.js")
+async def service_worker() -> Response:
+    """Serve the service worker from the root so it controls the whole app."""
+    path = BASE_DIR / "static" / "sw.js"
+    return Response(
+        path.read_text(encoding="utf-8"),
+        media_type="application/javascript",
+        headers={"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"},
+    )
 
 
 @app.get("/health")

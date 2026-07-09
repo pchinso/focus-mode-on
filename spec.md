@@ -107,6 +107,11 @@ application for this app:
 
 - Header with the corporate gradient (Planet Blue → Water Turquoise → Energy
   Coral) on the dashboard.
+- **App logo mark**: the header brand shows a small vector logo (an inline SVG
+  "focus target" — concentric rings with a center dot) beside the app name, not
+  just text; the same mark is served as the browser-tab **favicon**
+  (`/static/favicon.svg`). White on the gradient header; brand colors on the
+  favicon so it reads on light and dark tabs.
 - Both light and dark modes, switchable from the header and persisted; all
   colors come from a single CSS custom-property token file (no hardcoded
   colors in components, no raw `white`/`#fff`).

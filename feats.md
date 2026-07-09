@@ -9,6 +9,10 @@
 - [X] feat:  help button with a list of inputs examples that provide actions.
 - [X] review: create a new specs_v11.md file with features an better UI.
 - [X] feat:  for  upper left home shorcut where the name of app are in text,  create a icon for the app not only text.
-- [ ] git action: merge v1.0 branch to main
+- [X] git action: merge v1.0 branch to main. Do it [PS C:\_Dev\Python\Projects\focus-mode-on> git push origin main
+  Total 0 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+  To https://github.com/pchinso/focus-mode-on.git
+  74ea046..107067d  main -> main
+  PS C:\_Dev\Python\Projects\focus-mode-on>]
 - [X] git action: new branch v1.1
-- [ ] feat: in branch v1.1 implement specs_v11.md features (in progress: Approve/Discard all, dashboard search, command palette Ctrl+K, rename task, delete task, responsive layout done; reorder/re-parent/delete-undo/edit-before-approve/HTML export/accent colors/regenerate icon/toasts pending)
+- [ ] feat: in branch v1.1 implement specs_v11.md features (in progress: Approve/Discard all, dashboard search, command palette Ctrl+K, rename task, delete task, responsive layout, HTML report export, regenerate icon done; reorder/re-parent/delete-undo/edit-before-approve/accent colors/toasts pending)

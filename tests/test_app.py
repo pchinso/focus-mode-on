@@ -148,6 +148,28 @@ def test_nested_subtasks_over_http(client):
     assert "data-toggle-collapse" in page.text  # collapse caret present
 
 
+def test_thread_html_report(client):
+    """v1.1: a self-contained themed HTML report of a thread."""
+    login(client)
+    approve(client, "create_thread", "work", "Launch")
+    client.post("/thread/work/launch/task", data={"title": "Ship it"})
+    resp = client.get("/report/work/launch")
+    assert resp.status_code == 200
+    body = resp.text
+    assert "<!DOCTYPE html>" in body and "<style>" in body  # self-contained
+    assert "Launch" in body and "Ship it" in body
+    assert "linear-gradient" in body  # Cox identity applied
+
+
+def test_regen_icon_redirects(client):
+    """v1.1: regenerate-icon redirects back (no-op without an API key)."""
+    login(client)
+    approve(client, "create_thread", "work", "IconThread")
+    resp = client.post("/regen-icon/work/iconthread", follow_redirects=False)
+    assert resp.status_code == 303
+    assert resp.headers["location"] == "/thread/work/iconthread"
+
+
 def test_rename_and_delete_task_over_http(client):
     login(client)
     approve(client, "create_thread", "work", "EditHttp")

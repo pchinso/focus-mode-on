@@ -301,6 +301,34 @@ async def restore_thread(rel_path: str) -> Response:
     return RedirectResponse("/archive", status_code=303)
 
 
+@app.post("/regen-icon/{rel_path:path}", dependencies=[Depends(require_login)])
+async def regen_icon(rel_path: str, background: BackgroundTasks) -> Response:
+    """Regenerate a thread's icon in the background, then return to its page."""
+    try:
+        thread = repo.get(rel_path)
+    except VaultError:
+        raise HTTPException(status_code=404, detail="Thread not found")
+    if icons.available:
+        background.add_task(_maybe_icon, thread.rel_path, thread.title)
+    return RedirectResponse(f"/thread/{rel_path}", status_code=303)
+
+
+@app.get(
+    "/report/{rel_path:path}",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_login)],
+)
+async def thread_report(request: Request, rel_path: str) -> Response:
+    """Render a self-contained, themed HTML report of a thread and its subtree."""
+    try:
+        thread = repo.get(rel_path)
+    except VaultError:
+        raise HTTPException(status_code=404, detail="Thread not found")
+    return templates.TemplateResponse(
+        request, "report.html", {"thread": thread}
+    )
+
+
 # -- AI command bar --------------------------------------------------------
 
 

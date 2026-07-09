@@ -26,6 +26,14 @@
   {% endif %}
   <h1>{{ thread.title }}</h1>
   <div class="thread-actions">
+    <a class="btn secondary" href="/report/{{ thread.rel_path }}" target="_blank" rel="noopener">
+      ⤓ Export HTML
+    </a>
+    <form action="/regen-icon/{{ thread.rel_path }}" method="post">
+      <button class="btn secondary" type="submit" title="Regenerate the thread icon">
+        ↻ Icon
+      </button>
+    </form>
     <form action="/complete/{{ thread.rel_path }}" method="post">
       <button id="complete-thread" class="btn secondary" type="submit">
         ✓ Complete &amp; archive

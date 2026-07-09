@@ -298,7 +298,11 @@ focus-mode-on/
   **command bar** (focused with `/`) accepts natural-language input. It is a
   **multi-line text box (10 rows)** so longer notes can be composed and read at
   once; it grows/scrolls beyond 10 lines. `Enter` inserts a newline;
-  **`Ctrl`/`Cmd`+`Enter`** (or the Run button) submits.
+  **`Ctrl`/`Cmd`+`Enter`** (or the Run button) submits. On submit the note is
+  ingested and a **list of the identified actions** is shown directly under the
+  box: each parsed intent is enumerated (action, target thread, and title/text,
+  with a confidence badge), followed by which were applied, which need
+  confirmation, and which were ignored as out-of-mode.
 - **Thread view**: breadcrumb from root; child threads as cards; a **task
   tree** at the end with completed tasks above pending ones at every level.
   Actions: add task, add subtask (nest under any task), toggle task at any

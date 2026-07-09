@@ -78,8 +78,9 @@
   disabled until a real destination is chosen, so it can't submit an empty move.
 - **Pending-tasks peek on cards**: each thread card has a `＋` button that
   expands a panel of that thread's pending tasks (including nested sub-threads),
-  ordered oldest-first by creation date so stale work surfaces; each item links
-  to the thread it belongs to.
+  ordered oldest-first by creation date so stale work surfaces; each item shows
+  and links to the sub-thread it belongs to. Works identically in WORK and
+  PERSONAL modes.
 - **Icon legibility in dark mode**: generated thread icons render on a constant
   light chip (contained, padded) so images with transparent or dark content
   stay visible in both light and dark themes.
@@ -89,7 +90,13 @@
   on focus, keeping the 10-row compose area when needed.
 - **Breadcrumb + mini thread map** on thread pages for deep hierarchies.
 - **Better empty states** with a one-click example to seed a first thread.
-- **Responsive layout** that works on a narrow window / tablet.
+- **Fully responsive & adaptive**: the layout adapts to every screen size and
+  orientation — phones, tablets, laptops, desktops, and large displays — using
+  fluid grids, responsive typography (`clamp`), flexible spacing, and adaptive
+  navigation. No fixed widths that cause overflow; content, buttons, menus,
+  forms, and images stay clear and usable. Controls are sized for both touch
+  and mouse (hover-only affordances are always shown on touch devices), and
+  inputs avoid mobile auto-zoom.
 - **Toasts** for reversible actions (archive, delete, restore) with an undo.
 
 ---

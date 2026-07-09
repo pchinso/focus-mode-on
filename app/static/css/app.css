@@ -986,6 +986,60 @@ img.icon {
   font-size: 0.8rem;
 }
 
+/* ---------- Find / search (/search) ---------- */
+.search-form {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+}
+
+.search-form input[type="search"] {
+  flex: 1;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-main);
+  font: inherit;
+}
+
+.search-form input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+.find-heading {
+  font-size: 0.95rem;
+  color: var(--text-soft);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.find-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.find-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.find-list li:last-child {
+  border-bottom: none;
+}
+
+.find-list li:hover {
+  background: var(--hover-bg);
+}
+
 /* ---------- Tree overview (/tree) ---------- */
 .tree-tabs {
   display: flex;

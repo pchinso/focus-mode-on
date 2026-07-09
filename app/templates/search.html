@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}Find — Focus Mode On{% endblock %}
+
+{% block content %}
+<h1 style="margin-top: 0">Find</h1>
+
+<form action="/search" method="get" class="search-form">
+  <input
+    type="search"
+    name="q"
+    value="{{ q }}"
+    placeholder="Search threads and tasks…"
+    autocomplete="off"
+    autofocus
+    aria-label="Search"
+  />
+  <button class="btn" type="submit">Search</button>
+</form>
+
+{% if q %}
+{% if threads %}
+<h2 class="find-heading">Threads ({{ threads | length }})</h2>
+<ul class="find-list">
+  {% for t in threads %}
+  <li>
+    <a href="/thread/{{ t.rel_path }}" class="pending-link">
+      <span class="pending-title">{{ t.title }}</span>
+      <span class="pending-thread">{{ t.rel_path }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if tasks %}
+<h2 class="find-heading">Tasks ({{ tasks | length }})</h2>
+<ul class="find-list">
+  {% for task, owner in tasks %}
+  <li>
+    <a href="/thread/{{ owner }}" class="pending-link">
+      <span class="pending-title">{{ '☑' if task.done else '☐' }} {{ task.title }}</span>
+      <span class="pending-thread">{{ owner }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if not threads and not tasks %}
+<p class="empty">No threads or tasks match “{{ q }}”.</p>
+{% endif %}
+
+{% else %}
+<h2 class="find-heading">Stale pending tasks (&gt; 14 days)</h2>
+{% if stale %}
+<ul class="find-list">
+  {% for task, owner in stale %}
+  <li>
+    <a href="/thread/{{ owner }}" class="pending-link">
+      <span class="pending-title">☐ {{ task.title }}</span>
+      <span class="pending-thread">{{ owner }}</span>
+    </a>
+    {% if task.created %}
+    <span class="age old">{{ human_age(task.created, now()) }}</span>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="empty">No stale pending tasks — nice. Type above to search everything.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

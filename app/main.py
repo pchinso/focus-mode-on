@@ -174,6 +174,55 @@ async def set_mode(mode: str) -> Response:
 
 
 @app.get(
+    "/search", response_class=HTMLResponse, dependencies=[Depends(require_login)]
+)
+async def search(request: Request, q: str = "") -> Response:
+    """Full-text search over threads and tasks; empty query shows stale tasks."""
+    threads: list = []
+    tasks: list = []
+    stale: list = []
+    query = q.strip()
+    if query:
+        threads, tasks = _search_vault(query)
+    else:
+        now = datetime.now()
+        for root in repo.roots():
+            for task, owner in collect_pending(root):
+                if is_stale(task.created, now):
+                    stale.append((task, owner))
+        stale.sort(key=lambda pr: pr[0].created or datetime.min)
+    return templates.TemplateResponse(
+        request,
+        "search.html",
+        {"q": query, "threads": threads, "tasks": tasks, "stale": stale},
+    )
+
+
+def _search_vault(query: str):
+    """Return (matching threads, matching (task, owner)) for a query string."""
+    ql = query.lower()
+    thread_hits: list = []
+    task_hits: list = []
+
+    def walk_tasks(tasks, owner: str) -> None:
+        for t in tasks:
+            if ql in t.title.lower():
+                task_hits.append((t, owner))
+            walk_tasks(t.children, owner)
+
+    def walk(node) -> None:
+        for child in node.children:
+            if ql in child.title.lower() or ql in (child.description or "").lower():
+                thread_hits.append(child)
+            walk_tasks(child.tasks, child.rel_path)
+            walk(child)
+
+    for root in repo.roots():
+        walk(root)
+    return thread_hits, task_hits
+
+
+@app.get(
     "/tree", response_class=HTMLResponse, dependencies=[Depends(require_login)]
 )
 async def tree_view(request: Request) -> Response:

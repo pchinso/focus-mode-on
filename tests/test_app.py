@@ -464,6 +464,31 @@ def test_intent_in_mode_helper():
     assert main._intent_in_mode(Intent("create_thread", "personal", "t"), "work") is True
 
 
+def test_search_finds_threads_and_tasks(client):
+    """v1.2: full-text search matches thread titles and task text."""
+    login(client)
+    approve(client, "create_thread", "work", "Migration")
+    client.post("/thread/work/migration/task", data={"title": "Call the supplier"})
+    # Match a task by its text.
+    res = client.get("/search", params={"q": "supplier"}).text
+    assert "Call the supplier" in res and "/thread/work/migration" in res
+    # Match a thread by its title.
+    res = client.get("/search", params={"q": "migrat"}).text
+    assert "Migration" in res
+    # No match.
+    res = client.get("/search", params={"q": "zzznope"}).text
+    assert "No threads or tasks match" in res
+    # Linked in nav.
+    assert 'href="/search"' in res
+
+
+def test_search_empty_shows_stale_smart_list(client):
+    """v1.2: with no query, /search shows the stale-pending smart list."""
+    login(client)
+    page = client.get("/search").text
+    assert "Stale pending tasks" in page
+
+
 def test_tree_view_shows_hierarchy_both_modes(client):
     """v1.1: /tree renders threads, sub-threads and tasks for both roots."""
     login(client)

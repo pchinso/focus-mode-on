@@ -250,6 +250,29 @@
     }
   });
 
+  // Tree overview: collapse/expand a node.
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("[data-tree-toggle]");
+    if (!btn) return;
+    ev.preventDefault();
+    const item = btn.closest(".tree-item");
+    if (item) item.classList.toggle("collapsed");
+  });
+
+  // Tree overview: filter by mode (All / Work / Personal).
+  document.addEventListener("click", (ev) => {
+    const tab = ev.target.closest("[data-tree-tab]");
+    if (!tab) return;
+    const which = tab.getAttribute("data-tree-tab");
+    document.querySelectorAll(".tree-tab").forEach((t) => {
+      t.classList.toggle("active", t === tab);
+    });
+    document.querySelectorAll(".tree-root").forEach((sec) => {
+      const root = sec.getAttribute("data-root");
+      sec.hidden = which !== "all" && root !== which;
+    });
+  });
+
   // Delegated handler: confirm irreversible form submissions (e.g. purge).
   document.addEventListener("submit", (ev) => {
     const form = ev.target.closest("form[data-confirm]");

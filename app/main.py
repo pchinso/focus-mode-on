@@ -174,6 +174,18 @@ async def set_mode(mode: str) -> Response:
 
 
 @app.get(
+    "/tree", response_class=HTMLResponse, dependencies=[Depends(require_login)]
+)
+async def tree_view(request: Request) -> Response:
+    """Hierarchical overview of both roots: threads, subthreads, tasks."""
+    return templates.TemplateResponse(
+        request,
+        "tree.html",
+        {"roots": repo.roots(), "mode": current_mode(request)},
+    )
+
+
+@app.get(
     "/archive", response_class=HTMLResponse, dependencies=[Depends(require_login)]
 )
 async def archive_view(request: Request) -> Response:
@@ -393,6 +405,13 @@ async def purge_thread(rel_path: str) -> Response:
         repo.purge_thread(archive_rel)
     except VaultError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+    return RedirectResponse("/archive", status_code=303)
+
+
+@app.post("/purge-all", dependencies=[Depends(require_login)])
+async def purge_all() -> Response:
+    """Permanently delete all archived threads, then return to the archive."""
+    repo.purge_all_archived()
     return RedirectResponse("/archive", status_code=303)
 
 

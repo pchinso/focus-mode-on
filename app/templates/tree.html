@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% import "_macros.html" as ui %}
+
+{% block title %}Overview — Focus Mode On{% endblock %}
+
+{# A task node (with nested subtasks). #}
+{% macro tree_task(task) %}
+<li class="tree-item tree-task {{ 'done' if task.done else '' }}">
+  <div class="tree-row">
+    {% if task.has_children %}
+    <button class="tree-caret" type="button" data-tree-toggle aria-label="Collapse">▾</button>
+    {% else %}
+    <span class="tree-caret-spacer" aria-hidden="true"></span>
+    {% endif %}
+    <span class="tree-check">{{ '☑' if task.done else '☐' }}</span>
+    <span class="tree-label">{{ task.title }}</span>
+    {% if not task.done and task.created %}
+    <span class="age {{ 'old' if is_stale(task.created, now()) else '' }}">{{ human_age(task.created, now()) }}</span>
+    {% endif %}
+  </div>
+  {% if task.has_children %}
+  <ul class="tree-list">
+    {% for child in task.ordered_children() %}{{ tree_task(child) }}{% endfor %}
+  </ul>
+  {% endif %}
+</li>
+{% endmacro %}
+
+{# A thread node: sub-threads first, then its own tasks. #}
+{% macro tree_thread(thread) %}
+{% set has_kids = thread.children or thread.tasks %}
+<li class="tree-item tree-node">
+  <div class="tree-row">
+    {% if has_kids %}
+    <button class="tree-caret" type="button" data-tree-toggle aria-label="Collapse">▾</button>
+    {% else %}
+    <span class="tree-caret-spacer" aria-hidden="true"></span>
+    {% endif %}
+    <a class="tree-thread-link" href="/thread/{{ thread.rel_path }}">
+      {% if thread.icon %}
+      <img class="tree-icon" src="/icon/{{ thread.rel_path }}" alt="" />
+      {% else %}
+      <span class="tree-icon glyph" style="background: {{ ui.glyph_color(thread) }}">{{ ui.initials(thread.title) }}</span>
+      {% endif %}
+      <span class="tree-title">{{ thread.title }}</span>
+      {% set pc = thread.pending_count %}
+      <span class="tree-count">{% if pc %}{{ pc }} pending{% else %}done{% endif %}</span>
+    </a>
+  </div>
+  {% if has_kids %}
+  <ul class="tree-list">
+    {% for child in thread.children %}{{ tree_thread(child) }}{% endfor %}
+    {% for task in thread.ordered_tasks() %}{{ tree_task(task) }}{% endfor %}
+  </ul>
+  {% endif %}
+</li>
+{% endmacro %}
+
+{% block content %}
+<h1 style="margin-top: 0">Overview</h1>
+<p class="description">The full hierarchy of your work and personal structures.</p>
+
+<div class="tree-tabs" role="tablist" aria-label="Filter by mode">
+  <button class="tree-tab active" type="button" data-tree-tab="all">All</button>
+  <button class="tree-tab" type="button" data-tree-tab="work">Work</button>
+  <button class="tree-tab" type="button" data-tree-tab="personal">Personal</button>
+</div>
+
+{% for root in roots %}
+<section class="tree-root" data-root="{{ root.rel_path }}">
+  <h2 class="tree-root-title {{ root.rel_path }}">{{ root.title }}</h2>
+  {% if root.children %}
+  <div class="tree-scroll">
+    <ul class="tree-list tree-top">
+      {% for thread in root.children %}{{ tree_thread(thread) }}{% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <p class="empty">No threads in {{ root.title }} yet.</p>
+  {% endif %}
+</section>
+{% endfor %}
+{% endblock %}

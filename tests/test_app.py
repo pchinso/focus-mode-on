@@ -267,6 +267,21 @@ def test_archive_purge_deletes_forever(client):
     assert "Trash" not in client.get("/archive").text
 
 
+def test_archive_delete_all(client):
+    login(client)
+    approve(client, "create_thread", "work", "One")
+    approve(client, "create_thread", "work", "Two")
+    client.post("/complete/work/one")
+    client.post("/complete/work/two")
+    archive = client.get("/archive").text
+    assert "Delete all" in archive
+    resp = client.post("/purge-all", follow_redirects=False)
+    assert resp.status_code == 303
+    after = client.get("/archive").text
+    assert "One" not in after and "Two" not in after
+    assert "Nothing archived yet" in after
+
+
 def test_archive_shows_undo_toast(client):
     login(client)
     approve(client, "create_thread", "work", "Temp")
@@ -447,6 +462,28 @@ def test_intent_in_mode_helper():
     assert main._intent_in_mode(Intent("create_task", "personal/x", "t"), "work") is False
     # create_thread is always allowed (its parent is forced into the mode).
     assert main._intent_in_mode(Intent("create_thread", "personal", "t"), "work") is True
+
+
+def test_tree_view_shows_hierarchy_both_modes(client):
+    """v1.1: /tree renders threads, sub-threads and tasks for both roots."""
+    login(client)
+    approve(client, "create_thread", "work", "Alpha")
+    client.post("/new-thread/work/alpha", data={"title": "Beta"})  # sub-thread
+    client.post("/thread/work/alpha/beta/task", data={"title": "Deep task"})
+    client.post("/thread/work/alpha/task", data={"title": "Do work thing"})
+    client.post("/mode/personal")
+    approve(client, "create_thread", "personal", "Health")
+    client.post("/thread/personal/health/task", data={"title": "Do personal thing"})
+
+    page = client.get("/tree").text
+    assert page.count('data-root="work"') == 1 and page.count('data-root="personal"') == 1
+    assert "Alpha" in page and "Health" in page  # both roots
+    assert "Beta" in page  # nested sub-thread rendered recursively
+    assert "Deep task" in page and "Do work thing" in page  # nested + top task
+    assert "Do personal thing" in page  # personal task
+    assert "tree-tab" in page and "data-tree-toggle" in page  # tabs + collapse
+    # Linked in the header nav.
+    assert 'href="/tree"' in page
 
 
 def test_dashboard_has_search_and_palette(client):

@@ -986,6 +986,153 @@ img.icon {
   font-size: 0.8rem;
 }
 
+/* ---------- Tree overview (/tree) ---------- */
+.tree-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin: 0 0 1.25rem;
+  flex-wrap: wrap;
+}
+
+.tree-tab {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-main);
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tree-tab.active {
+  background: var(--planet-blue);
+  color: #fff;
+  border-color: transparent;
+}
+
+.tree-root {
+  margin-bottom: 2rem;
+}
+
+.tree-root[hidden] {
+  display: none;
+}
+
+.tree-root-title {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0.35rem;
+  margin: 0 0 0.75rem;
+}
+
+.tree-root-title.work {
+  border-color: var(--accent-work);
+}
+
+.tree-root-title.personal {
+  border-color: var(--accent-personal);
+}
+
+/* Horizontal scroll instead of overflow on deep/wide trees. */
+.tree-scroll {
+  overflow-x: auto;
+}
+
+.tree-list {
+  list-style: none;
+  margin: 0;
+  padding-left: 1.1rem;
+  border-left: 1px solid var(--border-soft);
+}
+
+.tree-top {
+  padding-left: 0;
+  border-left: none;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0;
+  white-space: nowrap;
+}
+
+.tree-caret {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.75rem;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  padding: 0;
+  transition: transform 0.12s ease;
+}
+
+.tree-item.collapsed > .tree-row .tree-caret {
+  transform: rotate(-90deg);
+}
+
+.tree-item.collapsed > .tree-list {
+  display: none;
+}
+
+.tree-caret-spacer {
+  width: 18px;
+  flex: 0 0 18px;
+}
+
+.tree-thread-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.tree-thread-link:hover {
+  text-decoration: none;
+  color: var(--text-link);
+}
+
+.tree-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: #fff;
+  padding: 2px;
+}
+
+.tree-icon.glyph {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0;
+}
+
+.tree-count {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  font-weight: 400;
+}
+
+.tree-check {
+  flex: 0 0 auto;
+}
+
+.tree-task.done .tree-label {
+  color: var(--text-soft);
+  text-decoration: line-through;
+}
+
 /* Notices. */
 .notice {
   background: var(--light-coral);

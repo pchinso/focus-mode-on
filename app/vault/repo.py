@@ -334,6 +334,16 @@ class VaultRepo:
             shutil.rmtree(target)
             self._record(f"Delete archived thread {archive_rel}")
 
+    def purge_all_archived(self) -> int:
+        """Permanently delete every archived thread. Returns the count removed."""
+        with self._lock:
+            removed = len(self.archived())
+            archive = self.base / ARCHIVE_DIR
+            if archive.exists():
+                shutil.rmtree(archive)
+            self._record("Delete all archived threads")
+            return removed
+
     def restore_thread(self, archive_rel: str) -> str:
         """Restore an archived thread back to its original location.
 

@@ -57,7 +57,21 @@
   suitable for sharing or printing — the v1.0 roadmap item, now specified:
   a themed, self-contained `.html` with the thread tree and task states.
 
-### 2.5 Thread identity
+### 2.5 Tree overview (Family-Tree view)
+
+- A dedicated **`/tree`** page giving a single hierarchical overview of
+  everything: Threads at the root, Subthreads nested under their parent, and
+  Tasks / Subtasks nested under their owning thread.
+- **Work and Personal are clearly separated** — shown as two sections with a
+  tab/filter (All · Work · Personal) to switch focus without mixing the data.
+- Clean visual hierarchy: indentation + connector lines, thread nodes as rows
+  (icon, title, pending count) linking to the thread page, task nodes as
+  checklist leaves (state + age). Nodes with children **collapse/expand**.
+- Fully responsive (no horizontal overflow — the tree scrolls within its own
+  container on small screens), preserves the design system, has **empty states**
+  when a section has no threads, and is keyboard-navigable.
+
+### 2.6 Thread identity
 
 - Per-thread **accent color** and optional emoji, stored in frontmatter, so
   threads are distinguishable beyond their generated icon.

@@ -32,6 +32,17 @@
         ↻ Icon
       </button>
     </form>
+    {% if move_targets %}
+    <form action="/move-thread/{{ thread.rel_path }}" method="post" class="move-form">
+      <select name="new_parent" class="move-select" aria-label="Move thread under">
+        <option value="" disabled selected>Move to…</option>
+        {% for p in move_targets %}
+        <option value="{{ p }}">{{ p }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn secondary" type="submit">Move</button>
+    </form>
+    {% endif %}
     <form action="/complete/{{ thread.rel_path }}" method="post">
       <button id="complete-thread" class="btn secondary" type="submit">
         ✓ Complete &amp; archive

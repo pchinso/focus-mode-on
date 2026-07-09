@@ -15,4 +15,5 @@
   74ea046..107067d  main -> main
   PS C:\_Dev\Python\Projects\focus-mode-on>]
 - [X] git action: new branch v1.1
-- [ ] feat: in branch v1.1 implement specs_v11.md features (in progress: Approve/Discard all, dashboard search, command palette Ctrl+K, rename task, delete task, responsive layout, HTML report export, regenerate icon, task reorder up/down, per-thread accent color done; re-parent/delete-undo/edit-before-approve/toasts pending)
+- [X] feat: in branch v1.1 implement specs_v11.md features (done: Approve/Discard all, dashboard search, command palette Ctrl+K, rename task, delete task, responsive layout, HTML report export, regenerate icon, task reorder up/down, per-thread accent color, thread re-parent, edit-before-approve, archive undo toast)
+- [ ] feat : include how old are a task based on date of creation, this allows to find old task pendings

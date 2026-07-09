@@ -613,6 +613,15 @@
     } catch (e) {
       /* ignore */
     }
+    // Undo toast: dismiss on click or after a few seconds.
+    const toast = document.getElementById("toast");
+    if (toast) {
+      const close = document.getElementById("toast-close");
+      if (close) close.addEventListener("click", () => (toast.hidden = true));
+      setTimeout(() => {
+        toast.hidden = true;
+      }, 7000);
+    }
     wireSwaps(document);
     indexNavItems();
     // Re-wire swaps for content injected later.

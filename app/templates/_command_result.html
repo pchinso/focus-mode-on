@@ -16,13 +16,22 @@
       {% for intent in queue %}
       <li data-queue-item>
         <input type="hidden" name="action" value="{{ intent.action }}" />
-        <input type="hidden" name="thread_path" value="{{ intent.thread_path }}" />
-        <input type="hidden" name="title" value="{{ intent.title }}" />
         <span class="action-tag">{{ intent.action.replace('_', ' ') }}</span>
-        <em>{{ intent.title or intent.thread_path or '—' }}</em>
-        {% if intent.thread_path and intent.title %}
-        <span class="source">in {{ intent.thread_path }}</span>
-        {% endif %}
+        <input
+          type="text"
+          name="title"
+          class="q-edit q-title"
+          value="{{ intent.title }}"
+          aria-label="Edit action title"
+        />
+        <span class="q-in">in</span>
+        <input
+          type="text"
+          name="thread_path"
+          class="q-edit q-path"
+          value="{{ intent.thread_path }}"
+          aria-label="Edit target thread"
+        />
         <span class="source">({{ '%.0f' | format(intent.confidence * 100) }}%)</span>
         <span class="queue-buttons">
           <button

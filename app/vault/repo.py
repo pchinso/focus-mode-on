@@ -212,6 +212,36 @@ class VaultRepo:
                 self._record(f"Reorder task in {thread.rel_path}: {task.title}")
             return thread
 
+    def move_thread(self, rel_path: str, new_parent: str) -> str:
+        """Re-parent a thread by moving its folder under ``new_parent``.
+
+        Args:
+            rel_path: Thread to move.
+            new_parent: A root (``work``/``personal``) or an existing thread
+                path to move it under. Cannot be the thread itself or one of
+                its own descendants.
+
+        Returns:
+            The thread's new relative path.
+        """
+        rel_path = _clean_rel(rel_path)
+        new_parent = _clean_rel(new_parent)
+        if new_parent.split("/", 1)[0] not in ROOTS:
+            raise VaultError(f"Parent must live under {ROOTS}: {new_parent}")
+        if new_parent == rel_path or new_parent.startswith(rel_path + "/"):
+            raise VaultError("Cannot move a thread into itself or its subtree")
+        with self._lock:
+            src = self.base / rel_path
+            if not src.is_dir():
+                raise VaultError(f"Thread not found: {rel_path}")
+            slug = self._unique_slug(new_parent, rel_path.rsplit("/", 1)[-1])
+            dest_rel = f"{new_parent}/{slug}"
+            dest = self.base / dest_rel
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(src), str(dest))
+            self._record(f"Move thread {rel_path} -> {dest_rel}")
+            return dest_rel
+
     def set_accent(self, rel_path: str, accent: str | None) -> Thread:
         """Set (or clear) a thread's accent color in its frontmatter."""
         with self._lock:

@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 import re
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import BackgroundTasks, Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
@@ -179,8 +180,16 @@ async def thread_view(request: Request, rel_path: str) -> Response:
         thread = repo.get(rel_path)
     except VaultError:
         raise HTTPException(status_code=404, detail="Thread not found")
+    # Candidate re-parent targets: roots + other threads, excluding self and
+    # this thread's own subtree.
+    rel = thread.rel_path
+    move_targets = list(ROOTS) + [
+        p for p in _all_paths() if p != rel and not p.startswith(rel + "/")
+    ]
     return templates.TemplateResponse(
-        request, "thread.html", {"thread": thread}
+        request,
+        "thread.html",
+        {"thread": thread, "move_targets": move_targets},
     )
 
 
@@ -299,14 +308,17 @@ def _parse_task_path(raw: str) -> list[int]:
 
 @app.post("/complete/{rel_path:path}", dependencies=[Depends(require_login)])
 async def complete_thread(rel_path: str) -> Response:
-    """Archive a thread and redirect to its parent (or dashboard)."""
+    """Archive a thread and redirect with an undo toast to its parent."""
     try:
-        repo.complete_thread(rel_path)
+        title = repo.get(rel_path).title
+        dest = repo.complete_thread(rel_path)
     except VaultError:
         raise HTTPException(status_code=404, detail="Thread not found")
     parent = rel_path.rsplit("/", 1)[0] if "/" in rel_path else ""
-    target = f"/thread/{parent}" if parent else "/"
-    return RedirectResponse(target, status_code=303)
+    base = f"/thread/{parent}" if parent else "/"
+    flash = quote(f'Archived "{title}"')
+    undo = quote(f"/restore/{dest}")
+    return RedirectResponse(f"{base}?flash={flash}&undo={undo}", status_code=303)
 
 
 @app.post("/restore/{rel_path:path}", dependencies=[Depends(require_login)])
@@ -318,6 +330,16 @@ async def restore_thread(rel_path: str) -> Response:
     except VaultError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return RedirectResponse("/archive", status_code=303)
+
+
+@app.post("/move-thread/{rel_path:path}", dependencies=[Depends(require_login)])
+async def move_thread(rel_path: str, new_parent: str = Form(...)) -> Response:
+    """Re-parent a thread and redirect to its new location."""
+    try:
+        dest = repo.move_thread(rel_path, new_parent)
+    except VaultError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return RedirectResponse(f"/thread/{dest}", status_code=303)
 
 
 @app.post("/accent/{rel_path:path}", dependencies=[Depends(require_login)])

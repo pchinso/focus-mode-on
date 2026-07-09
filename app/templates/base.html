@@ -60,6 +60,20 @@
 
     <main>{% block content %}{% endblock %}</main>
 
+    {% set flash = request.query_params.get('flash') %}
+    {% set undo = request.query_params.get('undo') %}
+    {% if flash %}
+    <div class="toast" id="toast" role="status">
+      <span>{{ flash }}</span>
+      {% if undo %}
+      <form action="{{ undo }}" method="post" style="display: inline; margin: 0">
+        <button class="btn secondary" type="submit">Undo</button>
+      </form>
+      {% endif %}
+      <button class="toast-close" type="button" id="toast-close" aria-label="Dismiss">✕</button>
+    </div>
+    {% endif %}
+
     <div id="palette-overlay" class="overlay" hidden>
       <div class="panel palette-panel">
         <input

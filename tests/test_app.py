@@ -148,6 +148,42 @@ def test_nested_subtasks_over_http(client):
     assert "data-toggle-collapse" in page.text  # collapse caret present
 
 
+def test_reparent_thread_over_http(client):
+    login(client)
+    approve(client, "create_thread", "work", "Parent")
+    approve(client, "create_thread", "work", "Child")
+    # The thread page offers move targets.
+    page = client.get("/thread/work/child").text
+    assert "move-thread" in page and "Move to" in page
+    # Re-parent Child under Parent.
+    resp = client.post(
+        "/move-thread/work/child",
+        data={"new_parent": "work/parent"},
+        follow_redirects=False,
+    )
+    assert resp.status_code == 303
+    assert resp.headers["location"] == "/thread/work/parent/child"
+    assert client.get("/thread/work/parent/child").status_code == 200
+
+
+def test_archive_shows_undo_toast(client):
+    login(client)
+    approve(client, "create_thread", "work", "Temp")
+    resp = client.post("/complete/work/temp")  # follows redirect to parent
+    # The destination page shows an undo toast with a restore action.
+    assert "toast" in resp.text
+    assert "Undo" in resp.text
+    assert "/restore/" in resp.text
+
+
+def test_edit_before_approve_fields_editable(client):
+    login(client)
+    resp = client.post("/command", data={"text": "email the accountant"})
+    # The queued title/target are editable inputs (not just hidden fields).
+    assert 'name="title"' in resp.text and "q-title" in resp.text
+    assert 'name="thread_path"' in resp.text and "q-path" in resp.text
+
+
 def test_move_and_accent_over_http(client):
     login(client)
     approve(client, "create_thread", "work", "Reorder")

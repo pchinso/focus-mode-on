@@ -134,6 +134,19 @@ def test_render_indents_nested_tasks():
     assert "  - [ ] Child" in text  # two-space indent for the child
 
 
+def test_move_thread_reparents(repo, tmp_path):
+    repo.create_thread("work", "Alpha")
+    repo.create_thread("work", "Beta")
+    # Move Beta under Alpha.
+    dest = repo.move_thread("work/beta", "work/alpha")
+    assert dest == "work/alpha/beta"
+    assert (tmp_path / "work" / "alpha" / "beta").is_dir()
+    assert not (tmp_path / "work" / "beta").exists()
+    # Cannot move a thread into its own subtree.
+    with pytest.raises(VaultError):
+        repo.move_thread("work/alpha", "work/alpha/beta")
+
+
 def test_move_task_reorders_within_group(repo):
     repo.create_thread("work", "Order")
     repo.add_task("work/order", "A")

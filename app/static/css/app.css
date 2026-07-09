@@ -764,6 +764,80 @@ main {
   padding: 0.4rem 0;
 }
 
+/* Toast (undo). */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--surface);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 0.6rem 0.9rem;
+  z-index: 60;
+  max-width: 92vw;
+}
+
+.toast[hidden] {
+  display: none;
+}
+
+.toast-close {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Re-parent control. */
+.move-form {
+  display: inline-flex;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.move-select {
+  max-width: 160px;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+/* Editable review-queue fields (edit before approve). */
+.q-edit {
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface-alt);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.q-title {
+  flex: 1;
+  min-width: 8ch;
+}
+
+.q-path {
+  width: 16ch;
+}
+
+.q-in {
+  color: var(--text-soft);
+  font-size: 0.8rem;
+}
+
 /* Notices. */
 .notice {
   background: var(--light-coral);

@@ -308,7 +308,13 @@ focus-mode-on/
   thread cards (icon, title, pending count, sub-thread count). A global
   **command bar** (focused with `/`) accepts natural-language input. It is a
   **multi-line text box (10 rows)** so longer notes can be composed and read at
-  once; it grows/scrolls beyond 10 lines. `Enter` inserts a newline;
+  once; it grows/scrolls beyond 10 lines. The box is **keyboard-reachable**: it
+  is autofocused on entry and `/` focuses it from anywhere on the dashboard
+  (`Esc` leaves it to resume navigation). Below the box a set of **command
+  tips / example templates** is shown (create a thread, several at once, add a
+  task, complete a task); clicking a tip inserts it, and the tips hide once the
+  user starts typing. An **Examples** help button toggles the tip list back on.
+  `Enter` inserts a newline;
   **`Ctrl`/`Cmd`+`Enter`** (or the Run button) submits. While interpreting, a
   brief "Thinking…" indicator shows — this step only parses the note (no thread
   creation or icon work happens here). On submit the note is ingested and the

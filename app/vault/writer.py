@@ -70,7 +70,10 @@ def _render_tasks(tasks: list[Task], depth: int, lines: list[str]) -> None:
         done_stamp = (
             f" ✅ {task.completed.isoformat()}" if task.done and task.completed else ""
         )
-        lines.append(f"{indent}- [{mark}] {task.title}{prio}{created}{due}{done_stamp}")
+        note = f" 📝 {task.note}" if task.note else ""
+        lines.append(
+            f"{indent}- [{mark}] {task.title}{prio}{created}{due}{done_stamp}{note}"
+        )
         if task.children:
             _render_tasks(task.children, depth + 1, lines)
 

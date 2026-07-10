@@ -1015,6 +1015,30 @@ img.icon {
   cursor: pointer;
 }
 
+/* Task note (single line) + form. */
+.task-note {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  padding-bottom: 0.25rem;
+  overflow-wrap: break-word;
+}
+
+.note-form {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.35rem 0.9rem 0.5rem;
+}
+
+.note-form input[type="text"] {
+  flex: 1;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-alt);
+  color: var(--text-main);
+  font: inherit;
+}
+
 /* Priority marker. */
 .prio {
   flex: 0 0 auto;

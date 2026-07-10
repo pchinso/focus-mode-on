@@ -27,6 +27,9 @@ _DUE_STAMP_RE = re.compile(r"\s*📅\s*(?P<d>\d{4}-\d{2}-\d{2})")
 # Priority stamps (Obsidian 🔺 high, 🔽 low).
 _PRIO_HIGH_RE = re.compile(r"\s*🔺")
 _PRIO_LOW_RE = re.compile(r"\s*🔽")
+# Inline single-line note (📝 to end of line); parsed first so its free text
+# does not interfere with the date/priority stamps.
+_NOTE_RE = re.compile(r"\s*📝\s*(?P<note>.+?)\s*$")
 
 
 def _parse_date(value: object) -> date | None:
@@ -98,6 +101,12 @@ def _parse_task(match: re.Match[str]) -> Task:
     """Build a Task (without children) from a regex match of a checklist line."""
     done = match.group("mark").lower() == "x"
     body = match.group("body")
+    # Extract the note first (free text to end of line).
+    note = ""
+    note_stamp = _NOTE_RE.search(body)
+    if note_stamp:
+        note = note_stamp.group("note")
+        body = _NOTE_RE.sub("", body).strip()
     completed: date | None = None
     created: datetime | None = None
     done_stamp = _DONE_STAMP_RE.search(body)
@@ -127,6 +136,7 @@ def _parse_task(match: re.Match[str]) -> Task:
         created=created,
         due=due,
         priority=priority,
+        note=note,
     )
 
 

@@ -188,6 +188,25 @@
     updateBulkToolbar();
   });
 
+  // Delegated handler: reveal a task's inline note form (prefilled).
+  document.addEventListener("click", (ev) => {
+    const btn = ev.target.closest("[data-note]");
+    if (!btn) return;
+    ev.preventDefault();
+    const item = btn.closest(".task-item");
+    const form = item && item.querySelector(":scope > .note-form");
+    if (form) {
+      form.hidden = !form.hidden;
+      if (!form.hidden) {
+        const input = form.querySelector('input[type="text"]');
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }
+    }
+  });
+
   // Delegated handler: reveal a task's inline due-date form.
   document.addEventListener("click", (ev) => {
     const btn = ev.target.closest("[data-due]");

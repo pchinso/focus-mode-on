@@ -95,6 +95,13 @@
       <button
         class="row-btn"
         type="button"
+        data-note
+        aria-label="Task note"
+        title="Note"
+      >📝</button>
+      <button
+        class="row-btn"
+        type="button"
         data-rename
         aria-label="Rename task"
         title="Rename"
@@ -116,6 +123,22 @@
       >✕</button>
     </span>
   </div>
+
+  {% if task.note %}
+  <div class="task-note" style="padding-left: {{ 1.9 + depth * 1.25 }}rem">📝 {{ task.note }}</div>
+  {% endif %}
+
+  <form
+    class="note-form"
+    action="/thread/{{ thread_rel }}/note/{{ path }}"
+    method="post"
+    data-swap="#task-list"
+    hidden
+    style="padding-left: {{ 1.5 + depth * 1.25 }}rem"
+  >
+    <input type="text" name="note" value="{{ task.note }}" placeholder="Add a note…" autocomplete="off" />
+    <button class="btn" type="submit">Save</button>
+  </form>
 
   <form
     class="rename-form"

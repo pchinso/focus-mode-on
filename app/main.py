@@ -477,6 +477,23 @@ async def cycle_priority(request: Request, rel_path: str, task_path: str) -> Res
 
 
 @app.post(
+    "/thread/{rel_path:path}/note/{task_path}",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_login)],
+)
+async def set_task_note(
+    request: Request, rel_path: str, task_path: str, note: str = Form("")
+) -> Response:
+    """Set or clear a task's single-line note; returns the task-list partial."""
+    try:
+        repo.set_note(rel_path, _parse_task_path(task_path), note)
+    except VaultError:
+        raise HTTPException(status_code=400, detail="Invalid task")
+    thread = repo.get(rel_path)
+    return templates.TemplateResponse(request, "_tasks.html", {"thread": thread})
+
+
+@app.post(
     "/thread/{rel_path:path}/due/{task_path}",
     response_class=HTMLResponse,
     dependencies=[Depends(require_login)],

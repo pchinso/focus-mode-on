@@ -188,6 +188,25 @@ def test_move_task_reorders_within_group(repo):
     assert [t.title for t in thread.ordered_tasks()] == ["C", "A", "B"]
 
 
+def test_task_note_round_trips_with_stamps(repo, tmp_path):
+    from datetime import date as _date
+
+    repo.create_thread("work", "Noted")
+    repo.add_task("work/noted", "Call supplier")
+    repo.set_due("work/noted", [0], _date(2026, 8, 1))
+    repo.cycle_priority("work/noted", [0])  # high
+    repo.set_note("work/noted", [0], "Ask about the 📅 delivery window")
+    # Note (with tricky text) and all stamps survive a reload.
+    t = repo.get("work/noted").ordered_tasks()[0]
+    assert t.note == "Ask about the 📅 delivery window"
+    assert t.due == _date(2026, 8, 1)
+    assert t.priority == "high"
+    assert t.title == "Call supplier"
+    # Clearing the note works.
+    repo.set_note("work/noted", [0], "")
+    assert repo.get("work/noted").ordered_tasks()[0].note == ""
+
+
 def test_priority_cycles_and_round_trips(repo, tmp_path):
     repo.create_thread("work", "Prio")
     repo.add_task("work/prio", "Important")

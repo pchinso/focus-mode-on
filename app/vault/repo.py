@@ -288,6 +288,16 @@ class VaultRepo:
             self._record(f"Bulk {action} {len(targets)} task(s) in {thread.rel_path}")
             return thread
 
+    def set_note(self, rel_path: str, path: list[int], note: str) -> Thread:
+        """Set (or clear) a task's single-line note."""
+        with self._lock:
+            thread = self.get(rel_path)
+            task = _resolve_task(thread.tasks, path)
+            task.note = note.strip()
+            write_thread(self.base, thread)
+            self._record(f"Set note in {thread.rel_path}: {task.title}")
+            return thread
+
     def cycle_priority(self, rel_path: str, path: list[int]) -> Thread:
         """Cycle a task's priority: normal → high → low → normal."""
         order = {"normal": "high", "high": "low", "low": "normal"}

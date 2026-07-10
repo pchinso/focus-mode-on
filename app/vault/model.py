@@ -32,6 +32,7 @@ class Task:
         created: Creation timestamp, if recorded (Obsidian ``➕`` stamp).
         due: Due date, if set (Obsidian ``📅`` stamp).
         priority: ``high`` / ``normal`` / ``low`` (Obsidian ``🔺``/``🔽``).
+        note: Optional single-line note (stored inline after a ``📝`` marker).
         children: Nested subtasks (may be arbitrarily deep).
     """
 
@@ -41,6 +42,7 @@ class Task:
     created: datetime | None = None
     due: date | None = None
     priority: str = "normal"
+    note: str = ""
     children: list["Task"] = field(default_factory=list)
 
     @property

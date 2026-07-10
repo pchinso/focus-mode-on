@@ -525,6 +525,20 @@ def test_bulk_complete_and_delete(client):
     assert resp.text.count('class="task-row') == before.count('class="task-row') - 1
 
 
+def test_task_note_over_http(client):
+    """v1.2: set and clear a single-line task note."""
+    login(client)
+    approve(client, "create_thread", "work", "Notes")
+    client.post("/thread/work/notes/task", data={"title": "Draft"})
+    resp = client.post(
+        "/thread/work/notes/note/0", data={"note": "Link: example.com"}
+    )
+    assert "task-note" in resp.text and "Link: example.com" in resp.text
+    # Clear it.
+    resp = client.post("/thread/work/notes/note/0", data={"note": ""})
+    assert "Link: example.com" not in resp.text
+
+
 def test_priority_cycle_over_http(client):
     """v1.2: cycling priority shows the high/low marker."""
     login(client)

@@ -1088,6 +1088,29 @@ img.icon {
   border-color: var(--water-turquoise);
 }
 
+/* ---------- Quick capture (/capture) ---------- */
+.capture-form {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+}
+
+.capture-form input[type="text"] {
+  flex: 1;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.capture-form input:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
 /* ---------- Insights (/insights) ---------- */
 .insights-grid {
   display: grid;

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Capture — Focus Mode On{% endblock %}
+
+{% block content %}
+<h1 style="margin-top: 0">Quick capture</h1>
+<p class="description">
+  Jot tasks fast into your <strong>{{ mode | upper }}</strong> Inbox — triage
+  them into threads later.
+</p>
+
+<form action="/capture" method="post" class="capture-form">
+  <input
+    type="text"
+    name="text"
+    placeholder="What needs doing? (Enter to add, keep typing)"
+    autocomplete="off"
+    autofocus
+    aria-label="Capture a task"
+  />
+  <button class="btn" type="submit">Add</button>
+</form>
+
+{% if inbox and inbox.tasks %}
+<h2 class="find-heading">Inbox ({{ inbox.pending_count }} pending)</h2>
+<ul class="find-list">
+  {% for task in inbox.ordered_tasks() %}
+  <li>
+    <a href="/thread/{{ inbox.rel_path }}" class="pending-link">
+      <span class="pending-title">{{ '☑' if task.done else '☐' }} {{ task.title }}</span>
+    </a>
+    {% if not task.done and task.created %}
+    <span class="age">{{ human_age(task.created, now()) }}</span>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+<p class="description">
+  <a href="/thread/{{ inbox.rel_path }}">Open the Inbox thread →</a>
+</p>
+{% else %}
+<p class="empty">Your {{ mode | upper }} Inbox is empty. Capture something above.</p>
+{% endif %}
+{% endblock %}

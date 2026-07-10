@@ -464,6 +464,21 @@ def test_intent_in_mode_helper():
     assert main._intent_in_mode(Intent("create_thread", "personal", "t"), "work") is True
 
 
+def test_quick_capture_to_inbox(client):
+    """v1.2: quick-capture adds tasks to the active mode's Inbox."""
+    login(client)  # WORK mode
+    page = client.get("/capture").text
+    assert "Quick capture" in page and 'href="/capture"' in page
+    # Capture a couple of tasks.
+    r = client.post("/capture", data={"text": "Buy stamps"}, follow_redirects=False)
+    assert r.status_code == 303
+    client.post("/capture", data={"text": "Email Bob"})
+    # They land in work/inbox and show on the capture page.
+    page = client.get("/capture").text
+    assert "Buy stamps" in page and "Email Bob" in page and "Inbox" in page
+    assert client.get("/thread/work/inbox").status_code == 200
+
+
 def test_insights_reports_stats(client):
     """v1.2: the insights page reports per-mode task stats."""
     login(client)

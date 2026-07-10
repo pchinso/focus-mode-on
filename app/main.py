@@ -177,6 +177,35 @@ async def set_mode(mode: str) -> Response:
 
 
 @app.get(
+    "/capture", response_class=HTMLResponse, dependencies=[Depends(require_login)]
+)
+async def capture_view(request: Request) -> Response:
+    """Quick-capture page: add tasks to the active mode's Inbox rapidly."""
+    mode = current_mode(request)
+    try:
+        inbox = repo.get(f"{mode}/inbox")
+    except VaultError:
+        inbox = None
+    return templates.TemplateResponse(
+        request, "capture.html", {"mode": mode, "inbox": inbox}
+    )
+
+
+@app.post("/capture", dependencies=[Depends(require_login)])
+async def capture_add(request: Request, text: str = Form("")) -> Response:
+    """Add a captured task to the active mode's Inbox, then return for more."""
+    mode = current_mode(request)
+    if text.strip():
+        rel = f"{mode}/inbox"
+        try:
+            repo.get(rel)
+        except VaultError:
+            repo.create_thread(mode, "Inbox")
+        repo.add_task(rel, text)
+    return RedirectResponse("/capture", status_code=303)
+
+
+@app.get(
     "/insights", response_class=HTMLResponse, dependencies=[Depends(require_login)]
 )
 async def insights_view(request: Request) -> Response:

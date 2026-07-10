@@ -300,6 +300,19 @@ def test_edit_before_approve_fields_editable(client):
     assert 'name="thread_path"' in resp.text and "q-path" in resp.text
 
 
+def test_reorder_drag_over_http(client):
+    """v1.2: drag-and-drop reorder endpoint + draggable rows."""
+    login(client)
+    approve(client, "create_thread", "work", "Drag")
+    for t in ("A", "B", "C"):
+        client.post("/thread/work/drag/task", data={"title": t})
+    page = client.get("/thread/work/drag").text
+    assert 'draggable="true"' in page and 'data-thread="work/drag"' in page
+    # Drag C (index 2) before A (index 0).
+    resp = client.post("/thread/work/drag/reorder/2", data={"target": "0"})
+    assert resp.text.index("C") < resp.text.index("A")
+
+
 def test_move_and_accent_over_http(client):
     login(client)
     approve(client, "create_thread", "work", "Reorder")

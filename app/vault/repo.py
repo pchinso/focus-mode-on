@@ -288,6 +288,28 @@ class VaultRepo:
             self._record(f"Bulk {action} {len(targets)} task(s) in {thread.rel_path}")
             return thread
 
+    def reorder_task(
+        self, rel_path: str, drag_path: list[int], target_path: list[int]
+    ) -> Thread:
+        """Move the dragged task to just before the target task.
+
+        Supports both same-parent reordering and moving under a different
+        parent (drag-and-drop). A drop onto the dragged task itself or into its
+        own subtree is ignored (would create a cycle / lose the subtree).
+        """
+        with self._lock:
+            thread = self.get(rel_path)
+            cont_d, task_d = _resolve_container(thread.tasks, drag_path)
+            cont_t, task_t = _resolve_container(thread.tasks, target_path)
+            if task_d is task_t or _contains(task_d, task_t):
+                return thread
+            cont_d.remove(task_d)
+            idx = cont_t.index(task_t)
+            cont_t.insert(idx, task_d)
+            write_thread(self.base, thread)
+            self._record(f"Reorder (drag) task in {thread.rel_path}: {task_d.title}")
+            return thread
+
     def set_note(self, rel_path: str, path: list[int], note: str) -> Thread:
         """Set (or clear) a task's single-line note."""
         with self._lock:
@@ -519,6 +541,13 @@ def _resolve_container(tasks: list[Task], path: list[int]) -> tuple[list[Task], 
             container = task.children
     assert task is not None
     return container, task
+
+
+def _contains(parent: Task, node: Task) -> bool:
+    """True if ``node`` is ``parent`` or anywhere in ``parent``'s subtree."""
+    if parent is node:
+        return True
+    return any(_contains(child, node) for child in parent.children)
 
 
 def _all_pending(tasks: list[Task]) -> list[Task]:

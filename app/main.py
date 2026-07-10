@@ -517,6 +517,25 @@ async def set_task_due(
 
 
 @app.post(
+    "/thread/{rel_path:path}/reorder/{task_path}",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_login)],
+)
+async def reorder_task(
+    request: Request, rel_path: str, task_path: str, target: str = Form(...)
+) -> Response:
+    """Drag-and-drop: move a task before another; returns the task-list partial."""
+    try:
+        repo.reorder_task(
+            rel_path, _parse_task_path(task_path), _parse_task_path(target)
+        )
+    except VaultError:
+        raise HTTPException(status_code=400, detail="Invalid task")
+    thread = repo.get(rel_path)
+    return templates.TemplateResponse(request, "_tasks.html", {"thread": thread})
+
+
+@app.post(
     "/thread/{rel_path:path}/move/{task_path}",
     response_class=HTMLResponse,
     dependencies=[Depends(require_login)],

@@ -174,6 +174,26 @@ def test_move_thread_reparents(repo, tmp_path):
         repo.move_thread("work/alpha", "work/alpha/beta")
 
 
+def test_reorder_task_drag_same_parent_and_reparent(repo):
+    repo.create_thread("work", "DnD")
+    repo.add_task("work/dnd", "A")
+    repo.add_task("work/dnd", "B")
+    repo.add_task("work/dnd", "C")
+    # Drag C (index 2) before A (index 0): order becomes C, A, B.
+    thread = repo.reorder_task("work/dnd", [2], [0])
+    assert [t.title for t in thread.ordered_tasks()] == ["C", "A", "B"]
+    # Re-parent: drag B under C — first give C a child to target.
+    repo.add_task("work/dnd", "C1", parent_path=[0])  # C is now index 0
+    # Drag B (top-level index 2) before C1 (path 0.0): B moves under C.
+    thread = repo.reorder_task("work/dnd", [2], [0, 0])
+    c = thread.ordered_tasks()[0]
+    assert c.title == "C"
+    assert "B" in [ch.title for ch in c.children]
+    # Cannot drop a task into its own subtree (no-op).
+    thread = repo.reorder_task("work/dnd", [0], [0, 0])
+    assert thread.ordered_tasks()[0].title == "C"  # unchanged
+
+
 def test_move_task_reorders_within_group(repo):
     repo.create_thread("work", "Order")
     repo.add_task("work/order", "A")

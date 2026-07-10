@@ -106,7 +106,7 @@
   <button class="btn danger" type="button" data-bulk="delete">🗑 Delete</button>
   <button class="btn secondary" type="button" data-bulk-clear>Clear</button>
 </div>
-<div id="task-list">
+<div id="task-list" data-thread="{{ thread.rel_path }}">
   {% include "_tasks.html" %}
 </div>
 

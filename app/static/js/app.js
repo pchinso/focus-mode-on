@@ -144,6 +144,55 @@
     }
   });
 
+  /* ---- Drag-and-drop task reorder / re-parent ---- */
+  let dragPath = null;
+
+  document.addEventListener("dragstart", (ev) => {
+    const row = ev.target.closest(".task-row[draggable]");
+    if (!row) return;
+    dragPath = row.getAttribute("data-path");
+    if (ev.dataTransfer) ev.dataTransfer.effectAllowed = "move";
+    row.classList.add("dragging");
+  });
+
+  document.addEventListener("dragend", (ev) => {
+    const row = ev.target.closest(".task-row");
+    if (row) row.classList.remove("dragging");
+    document
+      .querySelectorAll(".task-row.drag-over")
+      .forEach((r) => r.classList.remove("drag-over"));
+    dragPath = null;
+  });
+
+  document.addEventListener("dragover", (ev) => {
+    if (!dragPath) return;
+    const row = ev.target.closest(".task-row[draggable]");
+    if (!row || row.getAttribute("data-path") === dragPath) return;
+    ev.preventDefault();
+    if (ev.dataTransfer) ev.dataTransfer.dropEffect = "move";
+    document
+      .querySelectorAll(".task-row.drag-over")
+      .forEach((r) => r.classList.remove("drag-over"));
+    row.classList.add("drag-over");
+  });
+
+  document.addEventListener("drop", async (ev) => {
+    if (!dragPath) return;
+    const row = ev.target.closest(".task-row[draggable]");
+    if (!row) return;
+    ev.preventDefault();
+    const target = row.getAttribute("data-path");
+    const list = document.getElementById("task-list");
+    const rel = list && list.getAttribute("data-thread");
+    const from = dragPath;
+    dragPath = null;
+    row.classList.remove("drag-over");
+    if (!rel || !target || target === from) return;
+    const body = new FormData();
+    body.append("target", target);
+    await submitSwap("/thread/" + rel + "/reorder/" + from, "POST", body, "#task-list");
+  });
+
   /* ---- Multi-select bulk task actions ---- */
   function updateBulkToolbar() {
     const toolbar = document.getElementById("bulk-toolbar");

@@ -986,6 +986,20 @@ img.icon {
   font-size: 0.8rem;
 }
 
+/* Drag-and-drop reorder. */
+.task-row[draggable] {
+  cursor: grab;
+}
+
+.task-row.dragging {
+  opacity: 0.5;
+}
+
+.task-row.drag-over {
+  box-shadow: inset 0 2px 0 0 var(--water-turquoise);
+  background: var(--hover-bg);
+}
+
 /* Multi-select bulk toolbar + selection checkbox. */
 .bulk-toolbar {
   display: flex;

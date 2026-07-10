@@ -6,6 +6,8 @@
   <div
     class="task-row {{ 'done' if task.done else '' }}"
     data-nav="task"
+    data-path="{{ path }}"
+    draggable="true"
     tabindex="0"
     style="padding-left: {{ 0.25 + depth * 1.25 }}rem"
   >
